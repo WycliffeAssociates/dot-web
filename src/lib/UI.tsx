@@ -204,11 +204,15 @@ function distributeChapterMarkers(markers: chapterMarkers) {
 export async function getChaptersArrFromVtt(vid: IVidWithCustom) {
   cleanUpOldChapters();
   const chapterObj = vid.text_tracks?.find((tt) => tt.kind === "chapters");
-  if (!chapterObj || !chapterObj.src) return;
+  if (!chapterObj || !chapterObj.src || !chapterObj.sources) return;
+  const srcToFetch = chapterObj.sources.find((srcO) =>
+    srcO.src?.startsWith("https")
+  );
+  if (!srcToFetch || !srcToFetch.src) return;
   if (vid.chapterMarkers) return vid.chapterMarkers;
   const plyr = vjsPlayer();
   if (!plyr) return;
-  const chapterVtt = await fetchRemoteChaptersFile(chapterObj.src);
+  const chapterVtt = await fetchRemoteChaptersFile(srcToFetch.src);
   if (!chapterVtt) return;
   const labelRegex = /(?:\d? ?\w+ ?\d*:)(\d+)-(\d+)/;
   /* 
