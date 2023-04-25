@@ -13,9 +13,7 @@ import { Header } from "@components/Header";
 import { AppWrapper } from "@components/AppWrapper";
 import { getPlaylistData } from "@lib/routes";
 const {playlist} = Astro.params;
-if (!playlist) return new Response(null, {
-  status: 400
-})
+if (!playlist) return Astro.redirect('404')
 
 const preferredLocale = getPreferredLangFromHeader(Astro.request)
 const initialDictModule = await import(`../../i18n/${preferredLocale}.ts`)
@@ -27,10 +25,10 @@ const initialDict = {
 
 let userPreferences = getUserPreferences(Astro)
 let data = await getPlaylistData(Astro.url.origin, playlist)
+if (!data) return Astro.redirect('404')
 // type coercion here to add a few extra types below on this vids array. 
 const vids = data.videos as IVidWithCustom[]
 if (!vids || !vids.length) {
-  console.log("no vids")
   return new Response(null, {
     status: 404
   })

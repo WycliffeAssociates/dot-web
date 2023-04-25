@@ -163,7 +163,6 @@ export function mutateSortVidsArray(vids: IVidWithCustom[]) {
     vid.slugName = convertToValidFilename(String(vid.name));
     vid.book = vid.custom_fields?.book?.toUpperCase();
     vid.chapter = vid.custom_fields?.chapter;
-    // console.log(vid.book , vid.chapNum)
   });
   return {sortedVids, filteredByMatchingReferenceId};
 }

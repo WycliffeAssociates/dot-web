@@ -151,20 +151,17 @@ export function VidPlayer(props: IVidPlayerProps) {
 
       // if chapters.. replaceState with the 1Jn.1.2 chapter, where the last number is the beginning of the current chapter
       if (!curVid || !curVid.chapterMarkers || !currentTime) return;
-      console.log(curVid.chapterMarkers);
       const curChapter = curVid.chapterMarkers.find((marker) => {
         return (
           marker.chapterStart < currentTime && marker.chapterEnd > currentTime
         );
       });
-      console.log({curChapter});
       if (!curChapter) return;
       const parts = window.location.pathname.split("/");
       const bookChap = parts[parts.length - 1];
       const bookChapParts = bookChap.split(".");
       let newUrl: string | null = null;
-      newUrl = `${window.location.origin}/${parts[1]}/${bookChapParts[0]}.${bookChapParts[1]}.${curChapter.startVerse}`;
-      console.log({newUrl});
+      newUrl = `${window.location.origin}/${parts[1]}/${bookChapParts[0]}.${curVid.book}.${curChapter.startVerse}`;
       history.pushState(null, "", newUrl);
     }, 1000);
     vPlayer.ref.on("progress", throttleProgressUpdates);
@@ -192,8 +189,6 @@ export function VidPlayer(props: IVidPlayerProps) {
         vjsPlayer()?.playbackRate(Number(props.userPreferences?.playbackSpeed));
       }
     });
-
-    console.log("play CB");
     // Add in Chapters text to the tool tip that shows up when you hover
     const seekBar = vPlayer.ref.controlBar.progressControl.seekBar;
     //handle the actual hovering to update the chapter spot
@@ -210,7 +205,6 @@ export function VidPlayer(props: IVidPlayerProps) {
           <SeekBarChapterText text={currentChapLabel()} />
         ) as Node;
         // console.log({currentToolTip});
-        console.log({currentToolTip});
         currentToolTip.appendChild(seekBarEl);
       },
       {

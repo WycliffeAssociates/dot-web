@@ -64,7 +64,6 @@ export function getJsonFromDocCookie(key?: string): userPreferencesI | null {
     ?.find((row) => row.replaceAll(" ", "").startsWith(keyToUse))
     ?.split("=")?.[1];
   if (!cookieVal) return null;
-  console.log(cookieVal);
   let parsedObj: object | null = null;
   try {
     parsedObj = JSON.parse(cookieVal);
@@ -196,7 +195,6 @@ function distributeChapterMarkers(markers: chapterMarkers) {
   const plyr = vjsPlayer();
   if (!plyr) return;
   const sb = plyr.controlBar?.progressControl?.seekBar?.el();
-  console.log({sb});
   markers.forEach((marker) => {
     const chapMarker = <ChapterMarker leftAmt={marker.xPos} />;
     sb.appendChild(chapMarker);
@@ -232,10 +230,6 @@ Luc2:17-28
       const totalDur = plyr.duration();
       const labelMatches = parts[1].match(labelRegex);
       const xPos = String((startTime / totalDur) * 100);
-      // const chapMarker = <ChapterMarker leftAmt={xPos} />;
-      // const sb = plyr.controlBar.progressControl.seekBar.el();
-      // console.log({sb});
-      // sb.appendChild(chapMarker);
       return {
         chapterStart: startTime,
         chapterEnd: endTime,
@@ -441,10 +435,6 @@ export function populateSwPayload({type, val}: IpopulateSwPayload) {
     const videoSources = getAllMp4sForBook(val);
     if (!videoSources || !videoSources.length) return;
     setDownloadPreference((prev) => {
-      console.log({
-        ...prev,
-        swPayload: videoSources,
-      });
       return {
         ...prev,
         swPayload: videoSources,
@@ -459,19 +449,16 @@ export function handlePopState() {
   const parts = window.location.pathname.split("/");
   const bookChap = parts[parts.length - 1];
   const bookChapParts = bookChap.split(".");
-  console.log({bookChapParts});
   if (bookChapParts.length >= 2) {
     // book and chap
     const bookSeg = bookChapParts[0];
     const chapSeg = bookChapParts[1];
-    console.log({bookSeg, chapSeg});
 
     const correspondingVid = currBook.find(
       (vid) =>
         vid.custom_fields?.book == bookSeg &&
         String(Number(vid.custom_fields?.chapter)) == chapSeg
     );
-    console.log({correspondingVid});
 
     if (correspondingVid) {
       changePlayerSrc(correspondingVid);
