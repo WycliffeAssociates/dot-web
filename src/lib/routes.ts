@@ -1,9 +1,10 @@
 export const DOWNLOAD_SERVICE_WORK_URL = "sw-handle-saving";
-const baseUrl = import.meta.env.PROD ? "/api" : "http://127.0.0.1:8788/api";
+const baseUrl = import.meta.env.PROD
+  ? `${import.meta.env.BASE_URL}/api`
+  : "http://127.0.0.1:8788/api";
 
 export async function getPlaylistData(playlist: string) {
   try {
-    debugger;
     const urlToFetch = `${baseUrl}/getPlaylist?playlist=${playlist}`;
     const response = await fetch(urlToFetch);
     if (response.ok) {
