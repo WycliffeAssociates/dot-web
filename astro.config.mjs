@@ -87,6 +87,13 @@ export default defineConfig({
         type: "module",
         /* other options */
       },
+      injectManifest: {
+        globIgnores: [
+          "**/node_modules/**/*",
+          "$server_build/*",
+          "$server_build/**/*",
+        ],
+      },
     }),
   ],
   output: "server",

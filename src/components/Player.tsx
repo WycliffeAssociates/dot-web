@@ -126,7 +126,7 @@ export function VidPlayer(props: IVidPlayerProps) {
     // }, 5000);
     const curVid = currentVid();
     if (!curVid) return;
-    const {accountId, playerId} = await getCfBcIds();
+    const {accountId, playerId} = await getCfBcIds(window.location.origin);
     const playerModule = await import("@brightcove/player-loader");
 
     const options = {

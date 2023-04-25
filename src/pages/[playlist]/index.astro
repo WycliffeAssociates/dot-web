@@ -12,7 +12,7 @@ mutateSortVidsArray,
 import { Header } from "@components/Header";
 import { AppWrapper } from "@components/AppWrapper";
 import { getPlaylistData } from "@lib/routes";
-const {bookChap, playlist} = Astro.params;
+const {playlist} = Astro.params;
 if (!playlist) return new Response(null, {
   status: 400
 })
@@ -23,13 +23,7 @@ const initialDict = {
   [preferredLocale]: initialDictModule.default
 }
 
-//Regex = Start with any word or digit, then optional . separator, any number of optional digits (bc we want to match just a book e.g mat if given), and then another set of option digits.  Will match 
-// Luk, Luk.2, LUK.2.7, 2jn.1, luk27.  Even the last is fine without the period since we'll just treat the two matches as book/chap
-const bookChapRegex = /^([\d\w]+)(?:\.)?(\d+)?(?:\.)?(\d+)?/i
-const routingParts = bookChap && bookChap.match(bookChapRegex);
-const bookRouting = routingParts && routingParts?.[1]?.toUpperCase()
-const chapRouting = routingParts && Number(routingParts?.[2])
-const verseRouting = routingParts && routingParts?.[3] || undefined
+
 
 let userPreferences = getUserPreferences(Astro)
 let data = await getPlaylistData(Astro.url.origin, playlist)
@@ -46,16 +40,10 @@ const bucketized = groupObjectsByKey<IVidWithCustom, "book">(sortedVids, "book")
 bucketized.other = filteredByMatchingReferenceId.notMatching
 // const chapRouting = routingParts && routingParts?.[2]
 // const verseRouting = routingParts && routingParts?.[3]
-const defaultBook = bookRouting && bucketized[bookRouting] ? 
-      bucketized[bookRouting] :
-      bucketized[Object.keys(bucketized)[0]];
+const defaultBook =  bucketized[Object.keys(bucketized)[0]];
+const defaultChap =  defaultBook[0]
 
-const defChapIdx = defaultBook.findIndex(chap => Number(chap.chapter) == Number(chapRouting))
-
-
-const defaultChap = defChapIdx > -1 ?  defaultBook[defChapIdx]: defaultBook[0]
-
-const initialData = {vids: defaultBook, chap: defaultChap, verseRouting}
+const initialData = {vids: defaultBook, chap: defaultChap, verseRouting:undefined}
 ---
 
 <Layout title="Experiments">
