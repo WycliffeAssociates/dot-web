@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "^6.2.2",
-    "@astrojs/solid-js": "2.0.0",
+    "@astrojs/solid-js": "2.1.0",
     "@brightcove/player-loader": "^1.8.0",
     "@kobalte/core": "^0.8.2",
     "@solid-primitives/i18n": "^1.2.4",
