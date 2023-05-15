@@ -189,16 +189,16 @@ export function VidPlayer(props: IVidPlayerProps) {
     console.log(vPlayer.ref);
     let fullScreenToggle = vPlayer.ref?.controlBar?.fullscreenToggle;
 
-    fullScreenToggle.handleClick = (event) => {
-      console.log(vPlayer.ref.isFullscreen());
-      if (!vPlayer.ref.isFullscreen()) {
-        vPlayer.ref.enterFullWindow();
-      } else {
-        vPlayer.ref.exitFullWindow();
-      }
-      console.log("handle click");
-      console.log(event);
-    };
+    // fullScreenToggle.handleClick = (event) => {
+    //   console.log(vPlayer.ref.isFullscreen());
+    //   if (!vPlayer.ref.isFullscreen()) {
+    //     vPlayer.ref.enterFullWindow();
+    //   } else {
+    //     vPlayer.ref.exitFullWindow();
+    //   }
+    //   console.log("handle click");
+    //   console.log(event);
+    // };
     // add hotkeys
     vPlayer.ref.on("keydown", (e: KeyboardEvent) =>
       playerCustomHotKeys(e, vPlayer.ref)
