@@ -11,7 +11,6 @@ export function HiddenForm(props: IHiddenForm) {
       method="post"
       name={props.name}
       onSubmit={(e) => {
-        // console.log(e);
         // todo: set timeout on if only saved to Service worker to check for creation.
         // check then poll to see if the current video is saved in the service worker.
         return true;

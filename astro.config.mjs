@@ -101,9 +101,9 @@ export default defineConfig({
     mode: "directory",
   }),
   vite: {
-    build: {
-      minify: false,
-    },
+    // build: {
+    //   minify: false,
+    // },
     plugins: [
       visualizer({
         // goal:  ~100kib of HTML/CSS/Fonts (e.g. check network tab for amount loaded), and then ~300-350kib JS gzipped:

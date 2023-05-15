@@ -526,10 +526,8 @@ export function handleProgressBarHover(event: Event) {
   const time = distance * totalDur;
   const chapLabel = getChapterText(time);
   if (chapLabel && currentToolTip) {
-    console.log({chapLabel});
     setCurrentChapLabel(chapLabel);
   } else {
-    console.log("NO CHAP LABEL. FALSY STRING SET");
     setCurrentChapLabel("");
   }
 }

@@ -57,7 +57,6 @@ self.addEventListener("fetch", async (event) => {
         sum += current.size;
         return sum;
       }, 0);
-      // console.log({totalSize});
 
       // const fetchPromises = arrUrls.map((url) => {
       //   return fetch(url);

@@ -101,9 +101,7 @@ export function VidPlayer(props: IVidPlayerProps) {
 
   const [t, {add, locale, dict}] = useI18n();
   const [showChapSliderButtons, setShowChapSliderButtons] = createSignal(true);
-  // console.log(props.useI18n);
-  // const [t, {locale, setLocale, getDictionary}] = props.useI18n();
-  // console.log(t.hello({name: name()}));
+
   let playerRef: HTMLDivElement | undefined;
   let playerRefContainer: HTMLDivElement | undefined;
   let formDataRef: HTMLFormElement | undefined;
@@ -155,6 +153,7 @@ export function VidPlayer(props: IVidPlayerProps) {
 
     // set state for later
     setVjsPlayer(vPlayer.ref);
+    console.log({vPlayer});
     //  inline
     vPlayer.ref.playsinline(true);
 
@@ -175,7 +174,6 @@ export function VidPlayer(props: IVidPlayerProps) {
       const parts = window.location.pathname.split("/");
       const bookChap = parts[parts.length - 1];
       const bookChapParts = bookChap.split(".");
-      console.log({bookChapParts});
       let newUrl: string | null = null;
       newUrl = `${window.location.origin}/${parts[1]}/${curVid.book}.${curVid.chapter}`;
       if (curChapter.chapterStart) {
@@ -188,7 +186,19 @@ export function VidPlayer(props: IVidPlayerProps) {
       const currentTime = vjsPlayer()?.currentTime();
       currentTime && setVidProgress(currentTime);
     });
+    console.log(vPlayer.ref);
+    let fullScreenToggle = vPlayer.ref?.controlBar?.fullscreenToggle;
 
+    fullScreenToggle.handleClick = (event) => {
+      console.log(vPlayer.ref.isFullscreen());
+      if (!vPlayer.ref.isFullscreen()) {
+        vPlayer.ref.enterFullWindow();
+      } else {
+        vPlayer.ref.exitFullWindow();
+      }
+      console.log("handle click");
+      console.log(event);
+    };
     // add hotkeys
     vPlayer.ref.on("keydown", (e: KeyboardEvent) =>
       playerCustomHotKeys(e, vPlayer.ref)
@@ -212,22 +222,28 @@ export function VidPlayer(props: IVidPlayerProps) {
         vjsPlayer()?.playbackRate(Number(props.userPreferences?.playbackSpeed));
       }
     });
+    // vPlayer.ref.on("play", () => {
+    //   try {
+    //     vPlayer.ref.enterFullWindow();
+    //   } catch (error) {
+    //     console.error({error});
+    //   }
+    // });
     // Add in Chapters text to the tool tip that shows up when you hover
     const seekBar = vPlayer.ref.controlBar.progressControl.seekBar;
+
     //handle the actual hovering to update the chapter spot
     const handleProgressHover = debounce(handleProgressBarHover, 10);
     seekBar.on("mouseover", handleProgressHover);
     seekBar.el().addEventListener(
       "mouseover",
       () => {
-        console.log("add tooltip here?");
         const currentToolTip = document.querySelector(
           ".vjs-progress-control .vjs-mouse-display"
         ) as Element;
         const seekBarEl = (
           <SeekBarChapterText text={currentChapLabel} />
         ) as Node;
-        // console.log({currentToolTip});
         currentToolTip.appendChild(seekBarEl);
       },
       {
