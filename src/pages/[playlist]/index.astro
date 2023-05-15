@@ -24,7 +24,10 @@ const initialDict = {
 
 
 let userPreferences = getUserPreferences(Astro)
+console.log({userPreferences})
+console.log(Astro.url.origin, playlist)
 let data = await getPlaylistData(Astro.url.origin, playlist)
+console.log({data})
 if (!data) return Astro.redirect('404')
 // type coercion here to add a few extra types below on this vids array. 
 const vids = data.videos as IVidWithCustom[]

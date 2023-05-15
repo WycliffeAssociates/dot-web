@@ -12,6 +12,9 @@ export const onRequestGet: PagesFunction = async (context) => {
     return new Response(null, {
       status: 400,
       statusText: "Missing parameters",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
     });
   }
   const pbApi = new playbackApi({
@@ -46,6 +49,9 @@ export const onRequestGet: PagesFunction = async (context) => {
     console.error(error);
     return new Response(null, {
       status: 400,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
     });
   }
 };

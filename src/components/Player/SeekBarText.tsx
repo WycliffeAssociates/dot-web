@@ -1,10 +1,14 @@
+import type {Accessor} from "solid-js";
+
 interface ISeekBarChapterText {
-  text: string;
+  text: Accessor<string>;
 }
 export function SeekBarChapterText(props: ISeekBarChapterText) {
   return (
-    <span data-role="chapLabelTextHolder" class="hidden chapLabelTextHolder">
-      {props.text}
+    // <Show when={props.text}>
+    <span data-role="chapLabelTextHolder" class="chapLabelTextHolder">
+      {props.text()}
     </span>
+    // </Show>
   );
 }

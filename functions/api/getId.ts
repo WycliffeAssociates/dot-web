@@ -10,6 +10,9 @@ export const onRequestGet: PagesFunction = async (context) => {
     return new Response(null, {
       status: 400,
       statusText: "Missing vars",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
     });
   }
   const data = JSON.stringify({accountId, playerId});

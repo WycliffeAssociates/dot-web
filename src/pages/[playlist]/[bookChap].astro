@@ -13,6 +13,7 @@ import { Header } from "@components/Header";
 import { AppWrapper } from "@components/AppWrapper";
 import { getPlaylistData } from "@lib/routes";
 const {bookChap, playlist} = Astro.params;
+
 if (!playlist) return Astro.redirect('404')
 
 const preferredLocale = getPreferredLangFromHeader(Astro.request)

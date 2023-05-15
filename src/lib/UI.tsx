@@ -9,6 +9,8 @@ import type {
 import type {Setter} from "solid-js";
 import type {VideoJsPlayer} from "video.js";
 
+import {on} from "solid-js";
+
 import {
   currentBook,
   currentVid,
@@ -16,7 +18,10 @@ import {
   setCurrentChapLabel,
   setCurrentVid,
   setDownloadPreference,
+  setVjsPlayer,
+  vidProgress,
   vjsPlayer,
+  currentPlaylist,
 } from "@lib/store";
 import {cleanUpOldChapters} from "@components/Player/ChapterMarker";
 import {convertTimeToSeconds} from "./utils";
@@ -172,7 +177,7 @@ export function changeVid(chapNum: string | null | undefined) {
 
 export function changePlayerSrc(vid: IVidWithCustom) {
   if (!vjsPlayer()) return;
-
+  vjsPlayer()?.pause();
   changeVid(vid.chapter);
   vid.sources && vjsPlayer()?.src(vid.sources);
   vid.poster && vjsPlayer()?.poster(vid.poster);
@@ -204,7 +209,10 @@ function distributeChapterMarkers(markers: chapterMarkers) {
 export async function getChaptersArrFromVtt(vid: IVidWithCustom) {
   cleanUpOldChapters();
   const chapterObj = vid.text_tracks?.find((tt) => tt.kind === "chapters");
-  if (!chapterObj || !chapterObj.src || !chapterObj.sources) return;
+  if (!chapterObj || !chapterObj.src || !chapterObj.sources) {
+    setCurrentVid("chapterMarkers", []);
+    return;
+  }
   const srcToFetch = chapterObj.sources.find((srcO) =>
     srcO.src?.startsWith("https")
   );
@@ -213,7 +221,10 @@ export async function getChaptersArrFromVtt(vid: IVidWithCustom) {
   const plyr = vjsPlayer();
   if (!plyr) return;
   const chapterVtt = await fetchRemoteChaptersFile(srcToFetch.src);
-  if (!chapterVtt) return;
+  if (!chapterVtt) {
+    setCurrentVid("chapterMarkers", []);
+    return;
+  }
   const labelRegex = /(?:\d? ?\w+ ?\d*:)(\d+)-(\d+)/;
   /* 
   These should all match: optional digit, optional space, arbitrary num letters, optional space, 1+ number, colon (required), capture all digits after the colon, and be followed by a - and arbitrary digit numbes. 
@@ -243,7 +254,8 @@ Luc2:17-28
         xPos: xPos,
       };
     });
-  vid.chapterMarkers = vttChapsArray;
+
+  setCurrentVid("chapterMarkers", vttChapsArray);
   return vttChapsArray;
 }
 export async function handleChapters(vid: IVidWithCustom) {
@@ -269,7 +281,7 @@ export async function handleVerseProvidedInRouting(
 }
 
 export function getChapterText(timeInSeconds: number) {
-  const cVid = currentVid();
+  const cVid = currentVid;
   if (!cVid || !cVid.chapterMarkers) return;
   const currentChap = cVid.chapterMarkers.find((marker) => {
     return (
@@ -279,28 +291,47 @@ export function getChapterText(timeInSeconds: number) {
   if (!currentChap) return;
   return currentChap.label;
 }
-export function jumpToNextChap(dir: "NEXT" | "PREV") {
+
+export function trackAdjacentChap(isForNavButtons: boolean) {
+  // A hack to make this function a tracker of progress. do not delete.  Ideally the progress would be updated as a store signal, but the BC player has its own events that are pushed as a store.
+  // eslint-disable-next-line
+  const progress = vidProgress();
+  const next = getAdjacentChap("NEXT");
+  const prev = getAdjacentChap("PREV");
+  return {next, prev};
+}
+
+export function getAdjacentChap(dir: "NEXT" | "PREV") {
   const player = vjsPlayer();
-  const currVid = currentVid();
+  const currVid = currentVid;
   if (!player || !currVid) return;
   const currentTime = player.currentTime();
-  if (!currentTime) return;
+  if (currentTime !== 0 && !currentTime) return;
 
   if (dir == "NEXT") {
     const nextStart = currVid.chapterMarkers?.find(
       (marker) => marker.chapterStart > currentTime
     );
+    return nextStart || undefined;
+  } else if (dir == "PREV") {
+    const candidates = currVid.chapterMarkers?.filter((marker) => {
+      return marker.chapterStart + 3 < currentTime;
+    });
+    if (!candidates || !candidates.length) return undefined;
+    const prevStart = candidates.reduce((acc, current) => {
+      return acc.chapterEnd > current.chapterEnd ? acc : current;
+    });
+    return prevStart || undefined;
+  }
+}
+export function jumpToNextChap(dir: "NEXT" | "PREV") {
+  if (dir == "NEXT") {
+    const nextStart = getAdjacentChap("NEXT");
     if (nextStart) {
       vjsPlayer()?.currentTime(nextStart.chapterStart);
     }
   } else if (dir == "PREV") {
-    const candidates = currVid.chapterMarkers?.filter(
-      (marker) => marker.chapterEnd < currentTime
-    );
-    if (!candidates.length) return;
-    const prevStart = candidates.reduce((acc, current) => {
-      return acc.chapterEnd > current.chapterEnd ? acc : current;
-    });
+    const prevStart = getAdjacentChap("PREV");
     if (prevStart) {
       vjsPlayer()?.currentTime(prevStart.chapterStart);
     }
@@ -401,7 +432,7 @@ export const wholeBooksOptionsForSelect = () => {
 };
 
 export const currentMp4Sources = () => {
-  const currVid = currentVid();
+  const currVid = currentVid;
   if (!currVid) return;
   const mp4Srces = currVid.sources?.filter(
     (source) => source.container === "MP4" && source.src?.includes("https")
@@ -448,23 +479,30 @@ export function populateSwPayload({type, val}: IpopulateSwPayload) {
 }
 
 export function handlePopState() {
-  const currBook = currentBook();
-  if (!currBook) return;
+  const currPlaylist = currentPlaylist();
+  if (!currPlaylist) return;
+  // const currBook = currentBook();
+  // if (!currBook) return;
   const parts = window.location.pathname.split("/");
   const bookChap = parts[parts.length - 1];
   const bookChapParts = bookChap.split(".");
+  const currBookSlug = bookChapParts[0];
+  if (!currBookSlug) return;
+  const thisBook = currPlaylist[currBookSlug.toUpperCase()];
+  if (!thisBook) return;
   if (bookChapParts.length >= 2) {
     // book and chap
     const bookSeg = bookChapParts[0];
-    const chapSeg = bookChapParts[1];
+    const chapSeg = Number(bookChapParts[1]);
 
-    const correspondingVid = currBook.find(
+    const correspondingVid = thisBook.find(
       (vid) =>
-        vid.custom_fields?.book == bookSeg &&
-        String(Number(vid.custom_fields?.chapter)) == chapSeg
+        vid.custom_fields?.book?.toUpperCase() == bookSeg?.toUpperCase() &&
+        Number(vid.custom_fields?.chapter) == chapSeg
     );
 
     if (correspondingVid) {
+      setCurrentBook(thisBook);
       changePlayerSrc(correspondingVid);
     }
   }
@@ -472,6 +510,7 @@ export function handlePopState() {
 export function handleProgressBarHover(event: Event) {
   const player = vjsPlayer();
   if (!player) return;
+
   const seekBar = player.controlBar.progressControl.seekBar;
   const currentToolTip = document.querySelector(
     ".vjs-progress-control .vjs-mouse-display"
@@ -482,7 +521,39 @@ export function handleProgressBarHover(event: Event) {
   const time = distance * totalDur;
   const chapLabel = getChapterText(time);
   if (chapLabel && currentToolTip) {
+    console.log({chapLabel});
     setCurrentChapLabel(chapLabel);
+  } else {
+    console.log("NO CHAP LABEL. FALSY STRING SET");
+    setCurrentChapLabel("");
+  }
+}
+// todo
+// export function determineShowChapSlider() {
+//   const chapterBtnTrack = document.querySelector(
+//     '[data-js="chapterButtonTrack"]'
+//   ) as HTMLUListElement;
+//   if (!chapterBtnTrack) return;
+//   if (chapterBtnTrack.scrollWidth > refRect.width) {
+//     setShowChapSliderButtons(true);
+//   } else setShowChapSliderButtons(false);
+// }
+export function updateHistory(vid: IVidWithCustom, method: "PUSH" | "REPLACE") {
+  const currentPath = window.location.pathname;
+  const parts = currentPath.split("/");
+  const bookSegment = vid.custom_fields?.book;
+  const chapSegment = String(Number(vid.custom_fields?.chapter));
+  if (bookSegment && chapSegment) {
+    const finUrl = `${location.origin}/${parts[1]}/${bookSegment}.${chapSegment}`;
+    if (window.location.href !== finUrl) {
+      const plyr = vjsPlayer();
+      plyr && plyr.pause();
+      if (method == "PUSH") {
+        window.history.pushState(null, "", finUrl);
+      } else if (method === "REPLACE") {
+        window.history.replaceState(null, "", finUrl);
+      }
+    }
   }
 }
 export function handlePlayRateChange(event: Event) {

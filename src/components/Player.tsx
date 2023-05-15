@@ -5,7 +5,15 @@ import type {
   wholeBookPresets,
   IpopulateSwPayload,
 } from "@customTypes/types";
-import {For, JSX, Show, createResource, createSignal, onMount} from "solid-js";
+import {
+  For,
+  JSX,
+  Show,
+  createEffect,
+  createResource,
+  createSignal,
+  onMount,
+} from "solid-js";
 import {
   mobileHorizontalPadding,
   CONTAINER,
@@ -19,9 +27,10 @@ import {
   handlePlayRateChange,
   handleChapters,
   getSavedResponseFromCache,
-  getChapterText,
-  getChaptersArrFromVtt,
   handleVerseProvidedInRouting,
+  getAdjacentChap,
+  trackAdjacentChap,
+  updateHistory,
 } from "@lib/UI";
 import {
   setDownloadPreference,
@@ -37,6 +46,8 @@ import {
   setShowDownloadMenu,
   playerSpeed,
   setPlayerSpeed,
+  setVidProgress,
+  setCurrentPlaylist,
 } from "@lib/store";
 import {
   IconChapBack,
@@ -45,6 +56,8 @@ import {
   SpeedIcon,
   IconDownload,
   IconSavedLocally,
+  IconMaterialSymbolsChevronLeft,
+  IconMaterialSymbolsChevronRight,
 } from "@components/Icons";
 import {ChapterList} from "@components/PlayerNavigation/ChaptersList";
 import {SeekBarChapterText} from "@components/Player/SeekBarText";
@@ -53,6 +66,7 @@ import {PLAYER_LOADER_OPTIONS} from "src/constants";
 import {useI18n} from "@solid-primitives/i18n";
 import {getCfBcIds} from "@lib/routes";
 import {throttle} from "@solid-primitives/scheduled";
+import {createResizeObserver} from "@solid-primitives/resize-observer";
 
 import {
   convertTimeToSeconds,
@@ -79,21 +93,21 @@ export function VidPlayer(props: IVidPlayerProps) {
   setCurrentVid(props.initialData.chap);
   setCurrentBook(props.initialData.vids);
   setPlayerSpeed(props.userPreferences?.playbackSpeed || "1");
+  setCurrentPlaylist(props.vids);
   const [isSaved, {mutate, refetch}] = createResource(
     currentVid,
     getSavedResponseFromCache
   );
 
   const [t, {add, locale, dict}] = useI18n();
-  const [currentIsSaved, setCurrentVidIsSaved] = createSignal({
-    response: null,
-    isSaved: false,
-  });
+  const [showChapSliderButtons, setShowChapSliderButtons] = createSignal(true);
   // console.log(props.useI18n);
   // const [t, {locale, setLocale, getDictionary}] = props.useI18n();
   // console.log(t.hello({name: name()}));
   let playerRef: HTMLDivElement | undefined;
+  let playerRefContainer: HTMLDivElement | undefined;
   let formDataRef: HTMLFormElement | undefined;
+  let chaptersContainerRef: HTMLDivElement | undefined;
   const formName = "downloadData";
 
   //=============== state setters / derived  =============
@@ -124,7 +138,7 @@ export function VidPlayer(props: IVidPlayerProps) {
     // setTimeout(() => {
     //   history.pushState(null, "", `${location.href}?q=t`);
     // }, 5000);
-    const curVid = currentVid();
+    const curVid = currentVid;
     if (!curVid) return;
     const {accountId, playerId} = await getCfBcIds(window.location.origin);
     const playerModule = await import("@brightcove/player-loader");
@@ -145,8 +159,9 @@ export function VidPlayer(props: IVidPlayerProps) {
     vPlayer.ref.playsinline(true);
 
     // update url
+    // todo: buggy
     const throttleProgressUpdates = throttle(() => {
-      const curVid = currentVid();
+      const curVid = currentVid;
       const currentTime = vjsPlayer()?.currentTime();
 
       // if chapters.. replaceState with the 1Jn.1.2 chapter, where the last number is the beginning of the current chapter
@@ -160,11 +175,19 @@ export function VidPlayer(props: IVidPlayerProps) {
       const parts = window.location.pathname.split("/");
       const bookChap = parts[parts.length - 1];
       const bookChapParts = bookChap.split(".");
+      console.log({bookChapParts});
       let newUrl: string | null = null;
-      newUrl = `${window.location.origin}/${parts[1]}/${bookChapParts[0]}.${curVid.book}.${curChapter.startVerse}`;
-      history.pushState(null, "", newUrl);
+      newUrl = `${window.location.origin}/${parts[1]}/${curVid.book}.${curVid.chapter}`;
+      if (curChapter.chapterStart) {
+        newUrl = newUrl.concat(`.${curChapter.startVerse}`);
+      }
+      history.replaceState(null, "", newUrl);
     }, 1000);
-    vPlayer.ref.on("progress", throttleProgressUpdates);
+    vPlayer.ref.on("progress", () => {
+      throttleProgressUpdates();
+      const currentTime = vjsPlayer()?.currentTime();
+      currentTime && setVidProgress(currentTime);
+    });
 
     // add hotkeys
     vPlayer.ref.on("keydown", (e: KeyboardEvent) =>
@@ -202,7 +225,7 @@ export function VidPlayer(props: IVidPlayerProps) {
           ".vjs-progress-control .vjs-mouse-display"
         ) as Element;
         const seekBarEl = (
-          <SeekBarChapterText text={currentChapLabel()} />
+          <SeekBarChapterText text={currentChapLabel} />
         ) as Node;
         // console.log({currentToolTip});
         currentToolTip.appendChild(seekBarEl);
@@ -212,8 +235,17 @@ export function VidPlayer(props: IVidPlayerProps) {
       }
     );
 
-    // todo: replace url as chapters progress.
     window.addEventListener("popstate", (event) => handlePopState());
+
+    createResizeObserver(chaptersContainerRef, (refRect, refNode) => {
+      const chapterBtnTrack = document.querySelector(
+        '[data-js="chapterButtonTrack"]'
+      ) as HTMLUListElement;
+      if (!chapterBtnTrack) return;
+      if (chapterBtnTrack.scrollWidth > refRect.width) {
+        setShowChapSliderButtons(true);
+      } else setShowChapSliderButtons(false);
+    });
   });
   //=============== state setters / derived  =============
 
@@ -221,9 +253,23 @@ export function VidPlayer(props: IVidPlayerProps) {
   return (
     <div class={`overflow-x-hidden ${CONTAINER} w-full sm:(rounded-lg)`}>
       <div
+        ref={playerRefContainer}
         data-title="VideoPlayer"
-        class="w-full mx-auto aspect-12/9 sm:aspect-video   sm:(rounded-lg overflow-hidden)"
+        class="w-full mx-auto aspect-12/9 sm:aspect-video  relative  sm:(rounded-lg overflow-hidden)"
       >
+        {/* Chapter Back */}
+        <button
+          data-title="chapNext"
+          class={`text-surface w-20 h-20 bg-gray-100/30 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute left-4 top-1/2 -translate-y-1/2 z-30 ${
+            !trackAdjacentChap(true).prev && "hidden"
+          }`}
+          onClick={() => {
+            getAdjacentChap("PREV");
+            jumpToNextChap("PREV");
+          }}
+        >
+          <IconChapBack />
+        </button>
         <div
           ref={playerRef}
           id="PLAYER"
@@ -231,29 +277,24 @@ export function VidPlayer(props: IVidPlayerProps) {
         >
           <LoadingSpinner classNames="w-16 h-16 text-primary" />
         </div>
+        <button
+          data-title="chapBack"
+          class={`text-surface w-20 h-20 bg-gray-100/30 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute right-4 top-1/2 -translate-y-1/2 z-30 ${
+            !trackAdjacentChap(true).next && "hidden"
+          }`}
+          onClick={() => {
+            getAdjacentChap("NEXT");
+            jumpToNextChap("NEXT");
+          }}
+        >
+          <IconChapNext />
+        </button>
       </div>
 
       <div data-title="VideoSupplmental" class="py-2">
         <div data-title="videoControl" class="flex gap-2">
-          {/* Chapter Back */}
-          <button
-            data-title="chapNext"
-            class="text-surface w-4 hover:text-primary"
-            onClick={() => {
-              jumpToNextChap("PREV");
-            }}
-          >
-            <IconChapBack />
-          </button>
           {/* Chapter Forward */}
 
-          <button
-            data-title="chapBack"
-            class="text-surface w-4 hover:text-primary"
-            onClick={() => jumpToNextChap("NEXT")}
-          >
-            <IconChapNext />
-          </button>
           <span class="inline-flex gap-1 items-center">
             <input
               type="range"
@@ -291,28 +332,65 @@ export function VidPlayer(props: IVidPlayerProps) {
             >
               <IconDownload classNames="hover:text-primary" />
             </button>
-            <div class="absolute right-0 z-10 p-2  dark:bg-neutral-900 bg-neutral-100 ">
+            <div class="absolute right-0 z-10   dark:bg-neutral-900 bg-neutral-100 ">
               <Show when={showDownloadMenu()}>
                 <DownloadMenu formDataRef={formDataRef} formName={formName} />
               </Show>
             </div>
           </div>
         </div>
-        <div class="overflow-x-auto scrollbar-hide" data-title="ChaptersNav">
-          <ChapterList
-            formDataRef={formDataRef}
-            chapterButtonOnClick={(vid: IVidWithCustom) => {
-              formDataRef && formDataRef.reset();
-              changePlayerSrc(vid);
-            }}
-            currentVid={currentVid()}
-          />
+        <div class="flex">
+          <Show when={showChapSliderButtons()}>
+            <button
+              class="pr-6 text-2xl"
+              onClick={() => {
+                const chapterBtnTrack = document.querySelector(
+                  '[data-js="chapterButtonTrack"]'
+                ) as HTMLUListElement;
+                if (chapterBtnTrack) {
+                  chapterBtnTrack.scrollLeft -= chapterBtnTrack.clientWidth;
+                }
+              }}
+            >
+              <IconMaterialSymbolsChevronLeft />
+            </button>
+          </Show>
+          <div
+            class="overflow-x-auto scrollbar-hide flex w-full"
+            data-title="ChaptersNav"
+            ref={chaptersContainerRef}
+          >
+            <ChapterList
+              showChapSliderButtons={showChapSliderButtons}
+              formDataRef={formDataRef}
+              chapterButtonOnClick={(vid: IVidWithCustom) => {
+                formDataRef && formDataRef.reset();
+                changePlayerSrc(vid);
+              }}
+              currentVid={currentVid}
+            />
+          </div>
+          <Show when={showChapSliderButtons()}>
+            <button
+              class="pl-6 text-2xl"
+              onClick={() => {
+                const chapterBtnTrack = document.querySelector(
+                  '[data-js="chapterButtonTrack"]'
+                ) as HTMLUListElement;
+                if (chapterBtnTrack) {
+                  chapterBtnTrack.scrollLeft += chapterBtnTrack.clientWidth;
+                }
+              }}
+            >
+              <IconMaterialSymbolsChevronRight />
+            </button>
+          </Show>
         </div>
         <div
           data-title="BookAndPlaylistName"
           class={`${mobileHorizontalPadding} sm:(py-4)`}
         >
-          <h1 class="font-bold"> {normalizeBookName(currentVid()?.book)}</h1>
+          <h1 class="font-bold"> {normalizeBookName(currentVid?.book)}</h1>
           <p>{formatPlayListName(props.playlist)}</p>
         </div>
       </div>
@@ -345,8 +423,14 @@ export function VidPlayer(props: IVidPlayerProps) {
                       onClick={() => {
                         formDataRef && formDataRef.reset();
                         setNewBook(book);
+                        updateHistory(book[0], "PUSH");
                       }}
-                      class="inline-flex gap-2 items-center hover:(text-surface font-bold underline)"
+                      class={`inline-flex gap-2 items-center hover:(text-surface font-bold underline) ${
+                        currentVid.custom_fields?.book?.toUpperCase() ===
+                        key.toUpperCase()
+                          ? "underline font-bold"
+                          : ""
+                      }`}
                     >
                       <span class="bg-base text-primary dark:text-primary rounded-full p-4 h-0 w-0 inline-grid place-content-center">
                         {idx() + 1}

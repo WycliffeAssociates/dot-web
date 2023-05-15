@@ -101,6 +101,9 @@ export const PLAYER_LOADER_OPTIONS = {
     controls: true,
     playbackRates: [0.5, 1, 1.5, 2, 2.5],
     preload: "auto",
+    fullscreen: {
+      navigationUI: "show",
+    },
   },
   // id: 6312743832112,
   // videoId: currentVid().id,
