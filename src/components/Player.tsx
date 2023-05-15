@@ -101,6 +101,7 @@ export function VidPlayer(props: IVidPlayerProps) {
 
   const [t, {add, locale, dict}] = useI18n();
   const [showChapSliderButtons, setShowChapSliderButtons] = createSignal(true);
+  let tapTimeoutId: number | null;
 
   let playerRef: HTMLDivElement | undefined;
   let playerRefContainer: HTMLDivElement | undefined;
@@ -187,19 +188,31 @@ export function VidPlayer(props: IVidPlayerProps) {
       currentTime && setVidProgress(currentTime);
     });
     console.log(vPlayer.ref);
-    let fullScreenToggle = vPlayer.ref?.controlBar?.fullscreenToggle;
-
-    // fullScreenToggle.handleClick = (event) => {
-    //   console.log(vPlayer.ref.isFullscreen());
-    //   if (!vPlayer.ref.isFullscreen()) {
-    //     vPlayer.ref.enterFullWindow();
-    //   } else {
-    //     vPlayer.ref.exitFullWindow();
-    //   }
-    //   console.log("handle click");
-    //   console.log(event);
-    // };
-    // add hotkeys
+    // vPlayer.ref.tech.usingNativeControls(true);
+    vPlayer.ref.on("touchstart", (e) => {
+      console.log({e});
+      console.log(e.touches.length);
+      console.log(vPlayer.ref.paused());
+      if (e.touches.length === 1) {
+        tapTimeoutId = window.setTimeout(() => {
+          const isPlaying = vPlayer.ref.paused();
+          console.log({isPlaying});
+          isPlaying ? vPlayer.ref.pause() : vPlayer.ref.play();
+        }, 100);
+      }
+    });
+    vPlayer.ref.on("touchend", (e) => {
+      // console.log("touch end!");
+      if (tapTimeoutId) {
+        window.clearTimeout(tapTimeoutId);
+      }
+    });
+    vPlayer.ref.on("touchcancel", (e) => {
+      // console.log("touchcancel");
+      if (tapTimeoutId) {
+        window.clearTimeout(tapTimeoutId);
+      }
+    });
     vPlayer.ref.on("keydown", (e: KeyboardEvent) =>
       playerCustomHotKeys(e, vPlayer.ref)
     );
@@ -307,7 +320,7 @@ export function VidPlayer(props: IVidPlayerProps) {
         </button>
       </div>
 
-      <div data-title="VideoSupplmental" class="py-2">
+      <div data-title="VideoSupplmental" class="py-2 px-2">
         <div data-title="videoControl" class="flex gap-2">
           {/* Chapter Forward */}
 

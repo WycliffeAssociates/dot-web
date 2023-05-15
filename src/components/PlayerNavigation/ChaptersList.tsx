@@ -14,7 +14,7 @@ export function ChapterList(props: IChapterList) {
     <Show when={props.currentVid}>
       <ul
         data-js="chapterButtonTrack"
-        class={`flex flex-nowrap gap-3 items-start content-start py-4 overflow-x-auto scrollbar-hide  list-none scroll-smooth motion-reduce:scroll-auto w-full	 ${
+        class={`flex flex-nowrap gap-3 items-start content-start px-2 py-4 overflow-x-auto scrollbar-hide  list-none scroll-smooth motion-reduce:scroll-auto w-full	 ${
           props.showChapSliderButtons() ? "x-scroll-gradient" : ""
         }`}
       >
