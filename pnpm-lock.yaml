@@ -2,7 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@astrojs/cloudflare': ^6.2.2
-  '@astrojs/solid-js': ^2.1.0
+  '@astrojs/solid-js': ^2.0.0
   '@brightcove/player-loader': ^1.8.0
   '@cloudflare/workers-types': ^4.20230404.0
   '@kobalte/core': ^0.8.2
