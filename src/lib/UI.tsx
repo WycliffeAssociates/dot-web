@@ -34,13 +34,15 @@ const mobileHorizontalPadding = "px-3";
 export const debounce = <T extends unknown[]>(
   callback: (...args: T) => void,
   wait: number
-): ((...args: T) => void) => {
+): ((...args: T) => void | undefined) => {
   let timeoutId: number | null = null;
   return (...args: T) => {
-    window.clearTimeout(timeoutId);
-    timeoutId = window.setTimeout(() => {
-      callback(...args);
-    }, wait);
+    if (!import.meta.env.SSR) {
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => {
+        callback(...args);
+      }, wait);
+    }
   };
 };
 // todo: for seeing what videos you have saved
@@ -48,6 +50,7 @@ export async function searchCache(
   url: string,
   cacheName?: string
 ): Promise<Response | undefined> {
+  if (import.meta.env.SSR) return;
   if (!("caches" in window)) {
     return undefined;
   }
@@ -145,6 +148,7 @@ export function handleColorSchemeChange(
   setCookie(JSON.stringify(currCookie).trim());
 }
 export function setUpThemeListener(setPrefersDark: Setter<boolean>) {
+  if (import.meta.env.SSR) return;
   const darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
   const htmlElement = document.querySelector("html") as HTMLHtmlElement;
 
@@ -479,6 +483,7 @@ export function populateSwPayload({type, val}: IpopulateSwPayload) {
 }
 
 export function handlePopState() {
+  if (import.meta.env.SSR) return;
   const currPlaylist = currentPlaylist();
   if (!currPlaylist) return;
   // const currBook = currentBook();
@@ -539,6 +544,7 @@ export function handleProgressBarHover(event: Event) {
 //   } else setShowChapSliderButtons(false);
 // }
 export function updateHistory(vid: IVidWithCustom, method: "PUSH" | "REPLACE") {
+  if (import.meta.env.SSR) return;
   const currentPath = window.location.pathname;
   const parts = currentPath.split("/");
   const bookSegment = vid.custom_fields?.book;
