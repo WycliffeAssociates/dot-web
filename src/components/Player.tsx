@@ -189,30 +189,42 @@ export function VidPlayer(props: IVidPlayerProps) {
     });
     console.log(vPlayer.ref);
     // vPlayer.ref.tech.usingNativeControls(true);
-    vPlayer.ref.on("touchstart", (e) => {
+    vjsPlayer().on("touchstart", (e) => {
+      // e.stopPropagation();
+      const plyr = vjsPlayer();
       console.log({e});
       console.log(e.touches.length);
-      console.log(vPlayer.ref.paused());
-      if (e.touches.length === 1) {
-        tapTimeoutId = window.setTimeout(() => {
-          const isPlaying = vPlayer.ref.paused();
-          console.log({isPlaying});
-          isPlaying ? vPlayer.ref.pause() : vPlayer.ref.play();
-        }, 100);
+      console.log(plyr.paused());
+      const isPlaying = plyr.paused();
+      console.log({isPlaying});
+      console.log({plyr});
+      if (isPlaying) {
+        console.log("pausing");
+        plyr.pause();
+      } else {
+        console.log("playing");
+        plyr.play();
       }
+      // if (e.touches.length === 1) {
+      //   tapTimeoutId = window.setTimeout(() => {
+      //     debugger;
+
+      //   }, 100);
+      // }
     });
-    vPlayer.ref.on("touchend", (e) => {
-      // console.log("touch end!");
-      if (tapTimeoutId) {
-        window.clearTimeout(tapTimeoutId);
-      }
-    });
-    vPlayer.ref.on("touchcancel", (e) => {
-      // console.log("touchcancel");
-      if (tapTimeoutId) {
-        window.clearTimeout(tapTimeoutId);
-      }
-    });
+
+    // vPlayer.ref.on("touchend", (e) => {
+    //   // console.log("touch end!");
+    //   if (tapTimeoutId) {
+    //     window.clearTimeout(tapTimeoutId);
+    //   }
+    // });
+    // vPlayer.ref.on("touchcancel", (e) => {
+    //   // console.log("touchcancel");
+    //   if (tapTimeoutId) {
+    //     window.clearTimeout(tapTimeoutId);
+    //   }
+    // });
     vPlayer.ref.on("keydown", (e: KeyboardEvent) =>
       playerCustomHotKeys(e, vPlayer.ref)
     );
