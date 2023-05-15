@@ -101,11 +101,8 @@ export default defineConfig({
     mode: "directory",
   }),
   vite: {
-    // ssr: {
-    //   noExternal: ["@kobalte/core"],
-    // },
-    define: {
-      "process.env.SECRET": process.env.SECRET,
+    build: {
+      minify: false,
     },
     plugins: [
       visualizer({
