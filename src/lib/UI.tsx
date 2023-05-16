@@ -8,6 +8,7 @@ import type {
 } from "@customTypes/types";
 import type {Setter} from "solid-js";
 import type {VideoJsPlayer} from "video.js";
+// todo: fix above
 
 import {on} from "solid-js";
 
@@ -105,15 +106,17 @@ export function setCookie(value: string, key?: string): void {
 }
 export function playerCustomHotKeys(
   e: KeyboardEvent,
-  vjsPlayer: VideoJsPlayer
+  vjsPlayer: VideoJsPlayer,
+  increment: number
 ) {
   const currentTime = vjsPlayer.currentTime();
+  console.log({currentTime});
   switch (e.key) {
     case "ArrowLeft":
-      vjsPlayer.currentTime(currentTime - 5);
+      vjsPlayer.currentTime(currentTime - increment);
       break;
     case "ArrowRight":
-      vjsPlayer.currentTime(currentTime + 5);
+      vjsPlayer.currentTime(currentTime + increment);
       break;
     default:
       break;
@@ -587,6 +590,117 @@ export async function getSavedResponseFromCache(
       response: match,
       isSaved: true,
     };
+}
+interface IhandleVideoJsTaps {
+  el: Element;
+  leftDoubleFxn: (number: number) => void;
+  rightDoubleFxn: (number: number) => void;
+  singleTapFxn: () => void;
+  doubleTapUiClue: (dir: "LEFT" | "RIGHT", tapCount: number) => void;
+}
+export function handleVideoJsTaps({
+  el,
+  leftDoubleFxn,
+  rightDoubleFxn,
+  singleTapFxn,
+  doubleTapUiClue,
+}: IhandleVideoJsTaps) {
+  let tapCount = 0;
+  let tapTimer: number | undefined;
+  let lastTapTimestamp = 0;
+  let tapX: number;
+  let tapSide: "LEFT" | "RIGHT";
+
+  // Threshold in milliseconds to differentiate between taps and double taps
+  const thresholdMilliseconds = 250;
+  const singleThresholdMilliseconds = 50;
+  function handleTap(event: TouchEvent) {
+    const target = event.target as HTMLElement;
+    const wasOnVideo = target && target.nodeName === "VIDEO";
+    if (event.touches.length === 1 && wasOnVideo) {
+      lastTapTimestamp = event.timeStamp;
+      tapCount += 1;
+      const tapEvent = event.touches[0];
+      const boundingRect = target.getBoundingClientRect();
+      tapX = tapEvent.clientX - boundingRect.left;
+      const leftThreshold = boundingRect.width * 0.3;
+      const rightThreshold = boundingRect.width * 0.7;
+      console.log({tapX, leftThreshold, rightThreshold});
+      if (tapX <= leftThreshold) {
+        // console.log("was a LEFT  TAP");
+        tapSide = "LEFT";
+      } else if (tapX >= rightThreshold) {
+        // console.log("was a RIGHT  TAP");
+        tapSide = "RIGHT";
+      }
+    }
+  }
+  function handleTouchEnd(event: TouchEvent) {
+    const currentTimestamp = event.timeStamp;
+    console.log({currentTimestamp});
+    console.log({lastTapTimestamp});
+    console.log(`Diff is ${currentTimestamp - lastTapTimestamp}`);
+    console.log({tapCount});
+    // Too short of a single tap on touch end? Clear data
+
+    // super fast touches likely doubles.
+    //
+    if (
+      tapCount === 1 &&
+      currentTimestamp - lastTapTimestamp < singleThresholdMilliseconds
+    ) {
+      console.log("single tap too brief -- clear");
+      clearTapData();
+    } else if (tapCount === 1) {
+      // exec single tap
+      tapTimer = window.setTimeout(() => {
+        console.log("exec single tap then clear");
+        singleTapFxn();
+        clearTapData();
+      }, thresholdMilliseconds);
+    } else if (tapCount > 1) {
+      window.clearTimeout(tapTimer);
+      doubleTapUiClue(tapSide, tapCount);
+      tapTimer = window.setTimeout(() => {
+        console.log("executing multi tap");
+        console.log({tapCount});
+        // Determine if the tap occurred within 30% of the left or right edge of the bounding client
+
+        if (tapSide === "LEFT") {
+          console.log("LEFT DOUBLE TAP");
+          leftDoubleFxn(tapCount);
+        } else if (tapSide === "RIGHT") {
+          console.log("RIGHT DOUBLE TAP");
+          rightDoubleFxn(tapCount);
+        }
+        // if Tapcount 0: clear all
+        // if 1: exec single tap
+        // if 2: exec double tap
+        console.log(`clearing multi tap after ${thresholdMilliseconds}`);
+        clearTapData();
+      }, thresholdMilliseconds);
+    }
+    // otherwise
+  }
+
+  // Function to clear tap count and timestamps
+  function clearTapData() {
+    window.clearTimeout(tapTimer);
+    tapCount = 0;
+    lastTapTimestamp = 0;
+  }
+
+  // target.nodeName="VIDEO"
+  //       const tapX = event.tagetTouches[0].clientX - boundingClient.left;
+  //
+  // if so, e.target.getBoundingClientRect
+  // bottom, height, left, right, top, width, x, y
+  // Determine if the tap occurred within 30% of the left or right edge of the bounding client
+  // const leftThreshold = boundingClientWidth * 0.3;
+  // const rightThreshold = boundingClientWidth * 0.7;
+  el.addEventListener("touchstart", (e) => handleTap(e as TouchEvent));
+  el.addEventListener("touchend", (e) => handleTouchEnd(e as TouchEvent));
+  // el.addEventListener("touchcancel", clearTapData);
 }
 
 // Kobalte these components, add in i18n (including to player) see row, make the sw ts, and

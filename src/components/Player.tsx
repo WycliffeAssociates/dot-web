@@ -31,6 +31,7 @@ import {
   getAdjacentChap,
   trackAdjacentChap,
   updateHistory,
+  handleVideoJsTaps,
 } from "@lib/UI";
 import {
   setDownloadPreference,
@@ -101,6 +102,10 @@ export function VidPlayer(props: IVidPlayerProps) {
 
   const [t, {add, locale, dict}] = useI18n();
   const [showChapSliderButtons, setShowChapSliderButtons] = createSignal(true);
+  const [jumpingForwardAmount, setJumpingForwardAmount] = createSignal();
+  const [jumpingBackAmount, setJumpingBackAmount] = createSignal();
+  const jumpAmount = 5;
+
   let tapTimeoutId: number | null;
 
   let playerRef: HTMLDivElement | undefined;
@@ -141,7 +146,6 @@ export function VidPlayer(props: IVidPlayerProps) {
     if (!curVid) return;
     const {accountId, playerId} = await getCfBcIds(window.location.origin);
     const playerModule = await import("@brightcove/player-loader");
-
     const options = {
       ...PLAYER_LOADER_OPTIONS,
       refNode: playerRef,
@@ -151,7 +155,6 @@ export function VidPlayer(props: IVidPlayerProps) {
     };
 
     const vPlayer = await playerModule.default(options);
-
     // set state for later
     setVjsPlayer(vPlayer.ref);
     console.log({vPlayer});
@@ -188,30 +191,78 @@ export function VidPlayer(props: IVidPlayerProps) {
       currentTime && setVidProgress(currentTime);
     });
     console.log(vPlayer.ref);
-    // vPlayer.ref.tech.usingNativeControls(true);
-    vjsPlayer().on("touchstart", (e) => {
-      // e.stopPropagation();
-      const plyr = vjsPlayer();
-      console.log({e});
-      console.log(e.touches.length);
-      console.log(plyr.paused());
-      const isPlaying = plyr.paused();
-      console.log({isPlaying});
-      console.log({plyr});
-      if (isPlaying) {
-        console.log("pausing");
-        plyr.pause();
-      } else {
-        console.log("playing");
-        plyr.play();
-      }
-      // if (e.touches.length === 1) {
-      //   tapTimeoutId = window.setTimeout(() => {
-      //     debugger;
-
-      //   }, 100);
-      // }
+    let el = vPlayer.ref.el();
+    handleVideoJsTaps({
+      el,
+      rightDoubleFxn(number) {
+        const curTime = vjsPlayer()?.currentTime();
+        const newTime = number * jumpAmount + curTime;
+        console.log({newTime});
+        vjsPlayer()?.currentTime(newTime);
+        setJumpingForwardAmount(null);
+      },
+      leftDoubleFxn(number) {
+        const curTime = vjsPlayer()?.currentTime();
+        const newTime = curTime - number * jumpAmount;
+        console.log({newTime});
+        vjsPlayer()?.currentTime(newTime);
+        setJumpingBackAmount(null);
+      },
+      singleTapFxn() {
+        const plyr = vjsPlayer();
+        if (plyr.paused()) {
+          console.log("playing");
+          plyr.play();
+        } else {
+          console.log("pausing");
+          plyr.pause();
+        }
+      },
+      doubleTapUiClue(dir, tapsCount) {
+        if (dir == "LEFT") {
+          setJumpingBackAmount(tapsCount * jumpAmount);
+          setJumpingForwardAmount(null);
+        } else if (dir == "RIGHT") {
+          setJumpingBackAmount(null);
+          setJumpingForwardAmount(tapsCount * jumpAmount);
+        }
+      },
     });
+    console.log({el});
+    // vPlayer.ref.mobileUi({
+    //   fullscreen: {
+    //     enterOnRotate: true,
+    //     exitOnRotate: true,
+    //     lockOnRotate: true,
+    //     lockToLandscapeOnEnter: false,
+    //     iOS: false,
+    //     disabled: false,
+    //   },
+    //   touchControls: {
+    //     seekSeconds: 10,
+    //     tapTimeout: 300,
+    //     disableOnEnd: false,
+    //     disabled: false,
+    //   },
+    // });
+    // vjsPlayer().on("touchstart", (e) => {
+    //   // e.stopPropagation();
+    //   const plyr = vjsPlayer();
+    //   console.log({e});
+    //   console.log(e.touches.length);
+    //   console.log(plyr.paused());
+    //   if (e.touches.length === 1) {
+    //     tapTimeoutId = window.setTimeout(() => {
+    //       if (plyr.paused()) {
+    //         console.log("playing");
+    //         plyr.play();
+    //       } else {
+    //         console.log("pausing");
+    //         plyr.pause();
+    //       }
+    //     }, 50);
+    //   }
+    // });
 
     // vPlayer.ref.on("touchend", (e) => {
     //   // console.log("touch end!");
@@ -225,8 +276,9 @@ export function VidPlayer(props: IVidPlayerProps) {
     //     window.clearTimeout(tapTimeoutId);
     //   }
     // });
+
     vPlayer.ref.on("keydown", (e: KeyboardEvent) =>
-      playerCustomHotKeys(e, vPlayer.ref)
+      playerCustomHotKeys(e, vPlayer.ref, jumpAmount)
     );
     // get chapters for first video if exist
 
@@ -301,7 +353,7 @@ export function VidPlayer(props: IVidPlayerProps) {
         {/* Chapter Back */}
         <button
           data-title="chapNext"
-          class={`text-surface w-20 h-20 bg-gray-100/30 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute left-4 top-1/2 -translate-y-1/2 z-30 ${
+          class={`text-surface w-12 h-12 md:w-20 md:h-20 bg-gray-200/40 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute left-4 top-1/2 -translate-y-1/2 z-30 ${
             !trackAdjacentChap(true).prev && "hidden"
           }`}
           onClick={() => {
@@ -318,9 +370,22 @@ export function VidPlayer(props: IVidPlayerProps) {
         >
           <LoadingSpinner classNames="w-16 h-16 text-primary" />
         </div>
+        <Show when={jumpingBackAmount()}>
+          <div class="absolute w-1/4  top-0 left-0 bottom-0 bg-black/30 grid place-content-center rounded-[0%_100%_100%_0%_/_50%_50%_50%_50%] pointer-events-none">
+            {" "}
+            {String(jumpingBackAmount())}
+          </div>
+        </Show>
+        <Show when={jumpingForwardAmount()}>
+          <div class="absolute w-1/4  top-0 right-0 bottom-0 bg-red-400/30 grid place-content-center rounded-[100%_0%_0%_100%_/_50%_50%_50%_50%] pointer-events-none">
+            {" "}
+            {String(jumpingForwardAmount())}
+          </div>
+        </Show>
+
         <button
           data-title="chapBack"
-          class={`text-surface w-20 h-20 bg-gray-100/30 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute right-4 top-1/2 -translate-y-1/2 z-30 ${
+          class={`text-surface w-12 h-12 md:w-20 md:h-20 bg-gray-200/40 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute right-4 top-1/2 -translate-y-1/2 z-30 ${
             !trackAdjacentChap(true).next && "hidden"
           }`}
           onClick={() => {
