@@ -1,6 +1,6 @@
 import {playbackApi} from "@customTypes/Api";
 
-export const onRequestGet: PagesFunction = async (context) => {
+export const onRequestPost: PagesFunction = async (context) => {
   let start = Date.now();
 
   const request: Request = context.request;

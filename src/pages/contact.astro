@@ -1,11 +1,11 @@
 ---
 import Layout from "@layouts/Layout.astro";
-
+const origin = Astro.url.origin
 ---
 <Layout title="contact"> 
-	<div class="m-4">
+	<div class="m-4 text-surface bg-base">
 		<h2>Test form</h2>
-		<form action="/mail" method="POST" autocomplete="on">
+		<form action={`${origin}/api/mail`} method="POST" autocomplete="on">
 			<label>
 				From
 				<input class="border border-gray-800 mx-2 p-1"name="from" type="email" placeholder="sender@example.com *" required><br>
