@@ -25,7 +25,7 @@ import {
   currentPlaylist,
 } from "@lib/store";
 import {cleanUpOldChapters} from "@components/Player/ChapterMarker";
-import {convertTimeToSeconds} from "./utils";
+import {convertTimeToSeconds, formatDuration} from "./utils";
 import {ChapterMarker} from "@components/Player/ChapterMarker";
 import {SW_CACHE_NAME} from "src/constants";
 
@@ -104,19 +104,45 @@ export function setCookie(value: string, key?: string): void {
 
   document.cookie = cookieString;
 }
-export function playerCustomHotKeys(
-  e: KeyboardEvent,
-  vjsPlayer: VideoJsPlayer,
-  increment: number
-) {
+
+interface playerCustomHotKeysParams {
+  e: KeyboardEvent;
+  vjsPlayer: VideoJsPlayer;
+  increment: number;
+  setJumpingBackAmount: Setter<unknown>;
+  setJumpingForwardAmount: Setter<unknown>;
+}
+export function playerCustomHotKeys({
+  e,
+  vjsPlayer,
+  increment,
+  setJumpingBackAmount,
+  setJumpingForwardAmount,
+}: playerCustomHotKeysParams) {
   const currentTime = vjsPlayer.currentTime();
   console.log({currentTime});
+  let uiJumpingTimeout: number | null = null;
   switch (e.key) {
     case "ArrowLeft":
       vjsPlayer.currentTime(currentTime - increment);
+      setJumpingBackAmount(formatDuration((currentTime - increment) * 1000));
+      if (uiJumpingTimeout) {
+        window.clearTimeout(uiJumpingTimeout);
+      }
+      uiJumpingTimeout = window.setTimeout(() => {
+        setJumpingBackAmount(null);
+      }, 250);
       break;
     case "ArrowRight":
       vjsPlayer.currentTime(currentTime + increment);
+      setJumpingForwardAmount(formatDuration((currentTime + increment) * 1000));
+      if (uiJumpingTimeout) {
+        window.clearTimeout(uiJumpingTimeout);
+      }
+      uiJumpingTimeout = window.setTimeout(() => {
+        setJumpingForwardAmount(null);
+      }, 250);
+      break;
       break;
     default:
       break;
@@ -596,7 +622,7 @@ interface IhandleVideoJsTaps {
   leftDoubleFxn: (number: number) => void;
   rightDoubleFxn: (number: number) => void;
   singleTapFxn: () => void;
-  doubleTapUiClue: (dir: "LEFT" | "RIGHT", tapCount: number) => void;
+  doubleTapUiClue: (dir: "LEFT" | "RIGHT" | null, tapCount: number) => void;
 }
 export function handleVideoJsTaps({
   el,
@@ -609,23 +635,25 @@ export function handleVideoJsTaps({
   let tapTimer: number | undefined;
   let lastTapTimestamp = 0;
   let tapX: number;
-  let tapSide: "LEFT" | "RIGHT";
+  let tapSide: "LEFT" | "RIGHT" | null;
 
   // Threshold in milliseconds to differentiate between taps and double taps
   const thresholdMilliseconds = 250;
   const singleThresholdMilliseconds = 50;
+
   function handleTap(event: TouchEvent) {
     const target = event.target as HTMLElement;
     const wasOnVideo = target && target.nodeName === "VIDEO";
     if (event.touches.length === 1 && wasOnVideo) {
+      el.classList.add("vjs-user-active");
       lastTapTimestamp = event.timeStamp;
-      tapCount += 1;
       const tapEvent = event.touches[0];
       const boundingRect = target.getBoundingClientRect();
       tapX = tapEvent.clientX - boundingRect.left;
       const leftThreshold = boundingRect.width * 0.3;
       const rightThreshold = boundingRect.width * 0.7;
       console.log({tapX, leftThreshold, rightThreshold});
+      tapCount += 1;
       if (tapX <= leftThreshold) {
         // console.log("was a LEFT  TAP");
         tapSide = "LEFT";
@@ -688,6 +716,7 @@ export function handleVideoJsTaps({
     window.clearTimeout(tapTimer);
     tapCount = 0;
     lastTapTimestamp = 0;
+    tapSide = null;
   }
 
   // target.nodeName="VIDEO"

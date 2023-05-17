@@ -55,6 +55,7 @@ const defChapIdx = defaultBook.findIndex(chap => Number(chap.chapter) == Number(
 const defaultChap = defChapIdx > -1 ?  defaultBook[defChapIdx]: defaultBook[0]
 
 const initialData = {vids: defaultBook, chap: defaultChap, verseRouting}
+console.log(Astro.url.origin)
 ---
 
 <Layout title="Experiments">

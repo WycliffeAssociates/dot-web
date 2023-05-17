@@ -191,22 +191,25 @@ export function VidPlayer(props: IVidPlayerProps) {
       currentTime && setVidProgress(currentTime);
     });
     console.log(vPlayer.ref);
-    let el = vPlayer.ref.el();
+    let videoJsDomEl = vPlayer.ref.el();
     handleVideoJsTaps({
-      el,
+      el: videoJsDomEl,
       rightDoubleFxn(number) {
         const curTime = vjsPlayer()?.currentTime();
-        const newTime = number * jumpAmount + curTime;
+        // the extra minus jumpAmount is to account for fact that min tap amoutn is 2 to diff btw double and single taps, so we still want to allow the smallest measure of jump back;
+        const newTime = number * jumpAmount + curTime - jumpAmount;
         console.log({newTime});
         vjsPlayer()?.currentTime(newTime);
         setJumpingForwardAmount(null);
+        videoJsDomEl.classList.remove("vjs-user-active");
       },
       leftDoubleFxn(number) {
         const curTime = vjsPlayer()?.currentTime();
-        const newTime = curTime - number * jumpAmount;
+        const newTime = curTime - number * jumpAmount - jumpAmount;
         console.log({newTime});
         vjsPlayer()?.currentTime(newTime);
         setJumpingBackAmount(null);
+        videoJsDomEl.classList.remove("vjs-user-active");
       },
       singleTapFxn() {
         const plyr = vjsPlayer();
@@ -220,15 +223,15 @@ export function VidPlayer(props: IVidPlayerProps) {
       },
       doubleTapUiClue(dir, tapsCount) {
         if (dir == "LEFT") {
-          setJumpingBackAmount(tapsCount * jumpAmount);
+          setJumpingBackAmount(tapsCount * jumpAmount - 5);
           setJumpingForwardAmount(null);
         } else if (dir == "RIGHT") {
           setJumpingBackAmount(null);
-          setJumpingForwardAmount(tapsCount * jumpAmount);
+          setJumpingForwardAmount(tapsCount * jumpAmount - 5);
         }
       },
     });
-    console.log({el});
+    console.log({el: videoJsDomEl});
     // vPlayer.ref.mobileUi({
     //   fullscreen: {
     //     enterOnRotate: true,
@@ -278,7 +281,13 @@ export function VidPlayer(props: IVidPlayerProps) {
     // });
 
     vPlayer.ref.on("keydown", (e: KeyboardEvent) =>
-      playerCustomHotKeys(e, vPlayer.ref, jumpAmount)
+      playerCustomHotKeys({
+        e,
+        vjsPlayer: vPlayer.ref,
+        increment: jumpAmount,
+        setJumpingBackAmount,
+        setJumpingForwardAmount,
+      })
     );
     // get chapters for first video if exist
 
@@ -371,13 +380,19 @@ export function VidPlayer(props: IVidPlayerProps) {
           <LoadingSpinner classNames="w-16 h-16 text-primary" />
         </div>
         <Show when={jumpingBackAmount()}>
-          <div class="absolute w-1/4  top-0 left-0 bottom-0 bg-black/30 grid place-content-center rounded-[0%_100%_100%_0%_/_50%_50%_50%_50%] pointer-events-none">
+          <div
+            id="seekRippleBackward"
+            class="absolute w-1/4  top-0 left-0 bottom-0  grid place-content-center rounded-[0%_100%_100%_0%_/_50%_50%_50%_50%] z-40  capitalize font-bold text-base pointer-events-none seekRipple"
+          >
             {" "}
             {String(jumpingBackAmount())}
           </div>
         </Show>
         <Show when={jumpingForwardAmount()}>
-          <div class="absolute w-1/4  top-0 right-0 bottom-0 bg-red-400/30 grid place-content-center rounded-[100%_0%_0%_100%_/_50%_50%_50%_50%] pointer-events-none">
+          <div
+            id="seekRippleForward"
+            class="absolute w-1/4  top-0 right-0 bottom-0 seekRipple  grid place-content-center capitalize font-bold text-base z-40 rounded-[100%_0%_0%_100%_/_50%_50%_50%_50%] pointer-events-none"
+          >
             {" "}
             {String(jumpingForwardAmount())}
           </div>
