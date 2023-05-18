@@ -1,6 +1,6 @@
 ---
 import Layout from "@layouts/Layout.astro";
-const origin = Astro.url.origin
+// const origin = Astro.url.origin
 ---
 <Layout title="contact"> 
 	<div class="m-4 text-surface bg-base">
@@ -47,12 +47,6 @@ const origin = Astro.url.origin
 			<label>Email address <input type="email" name="email" /></label>
 			<label>Message <textarea name="message"></textarea></label>
 			<button type="submit">
-		</form>;
+		</form>
 	</div>
 </Layout>
-
-<style>
-	form * {
-		color: #888
-	}
-</style>

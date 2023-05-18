@@ -69,21 +69,9 @@ export type IpopulateSwPayload =
 export type i18nDictWithLangCode = Record<string, i18nDict>;
 
 export type i18nDict = Record<string, string>;
-/* 
-  [
-  {name: "a"
-  sources: [
-  {size: 10}, {size: 20}, {size:30}
-  ]},
-  {name: "b"
-  sources: [
-  {size: 20}, {size: 5}, {size:10}
-  ]}
-  ]
-  
-  [
-  {size: "biggest", totalSize: NUM}
-  {size: "smallet", totalSize: NUM}
-  ]
-  
-  */
+
+export interface cloudflareEnv {
+  ACCOUNT_ID: string;
+  PLAYER_ID: string;
+  POLICY_KEY: string;
+}

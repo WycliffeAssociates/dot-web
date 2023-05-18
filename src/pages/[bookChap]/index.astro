@@ -37,6 +37,13 @@ const initialDictModule = await import(`../../i18n/${preferredLocale}.ts`)
 const initialDict = {
   [preferredLocale]: initialDictModule.default
 }
+let videojsInitalDict;
+try {
+  let module = await import (`/node_modules/video.js/dist/lang/${preferredLocale}.json`)  
+    videojsInitalDict = module.default as Record<string, string>;
+} catch (error) {
+  console.error({error})
+}
 
 
 // DATA FETCHING
@@ -75,12 +82,12 @@ const initialData = {vids: defaultBook, chap: defaultChap, verseRouting}
 
 <Layout title="Experiments">
 	<div class="">
-		<Header client:idle prefersDark={userPreferences?.prefersDark}/>
+		<Header client:idle prefersDark={userPreferences?.prefersDark} locale={preferredLocale} initialDict={initialDict} />
   <div
     class="grid grid-rows-[auto_auto_1fr] overflow-y-auto"
   
   >
-      <AppWrapper client:load userPreferences={userPreferences} initialData={initialData} playlist={playlist} vids={bucketized} locale={preferredLocale} initialDict={initialDict}/>
+      <AppWrapper client:load userPreferences={userPreferences} initialData={initialData} playlist={playlist} vids={bucketized} locale={preferredLocale} initialDict={initialDict} videojsInitalDict={videojsInitalDict}/>
  </div> 
 </div> 
 </Layout>

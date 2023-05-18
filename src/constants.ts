@@ -1,5 +1,3 @@
-import type {CookieOptions} from "@customTypes/types";
-
 export const BibleBookCategories = {
   OT: [
     "GEN",

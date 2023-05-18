@@ -64,11 +64,8 @@ export function bytesToMb(bytes: number | undefined) {
   return String(val);
 }
 
-interface ObjectGroup {
-  [key: string]: object[];
-}
-
 export function groupObjectsByKey<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends {[key: string]: any},
   K extends keyof T
 >(objects: T[], key: K): Record<T[K], T[]> {
@@ -87,11 +84,12 @@ export function groupObjectsByKey<
     // Add the object to the corresponding group
     groups[value].push(object);
   });
-
   return groups;
 }
+
 export function getUserPreferences(
-  AstroObj: Readonly<AstroGlobal<Record<string, any>>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  AstroObj: AstroGlobal
 ): userPreferencesI | undefined {
   if (AstroObj.cookies.has("userPreferences")) {
     const cookie = AstroObj.cookies.get("userPreferences").json();

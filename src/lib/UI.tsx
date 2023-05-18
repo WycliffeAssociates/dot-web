@@ -10,8 +10,6 @@ import type {Setter} from "solid-js";
 import type {VideoJsPlayer} from "video.js";
 // todo: fix above
 
-import {on} from "solid-js";
-
 import {
   currentBook,
   currentVid,
@@ -19,7 +17,6 @@ import {
   setCurrentChapLabel,
   setCurrentVid,
   setDownloadPreference,
-  setVjsPlayer,
   vidProgress,
   vjsPlayer,
   currentPlaylist,
@@ -67,7 +64,7 @@ export async function searchCache(
   }
 }
 export function getJsonFromDocCookie(key?: string): userPreferencesI | null {
-  let keyToUse = key || "userPreferences";
+  const keyToUse = key || "userPreferences";
   const cookieVal = document.cookie
     .split(";")
     ?.find((row) => row.replaceAll(" ", "").startsWith(keyToUse))
@@ -194,11 +191,15 @@ export function setUpThemeListener(setPrefersDark: Setter<boolean>) {
   }
   return darkModeMediaQuery;
 }
-export function updateCookiePrefByKey(key: keyof userPreferencesI, val: any) {
+export function updateCookiePrefByKey<K extends keyof userPreferencesI>(
+  key: K,
+  val: userPreferencesI[K]
+) {
   const currCookie: userPreferencesI = getJsonFromDocCookie() || {};
   currCookie[key] = val;
   setCookie(JSON.stringify(currCookie).trim());
 }
+
 export function changeVid(chapNum: string | null | undefined) {
   const cb = currentBook();
   if (!chapNum || !cb) return;
@@ -215,7 +216,7 @@ export function changePlayerSrc(vid: IVidWithCustom) {
   vid.sources && vjsPlayer()?.src(vid.sources);
   vid.poster && vjsPlayer()?.poster(vid.poster);
   vjsPlayer()?.load();
-  vjsPlayer()?.one("loadedmetadata", (e) => {
+  vjsPlayer()?.one("loadedmetadata", () => {
     handleChapters(vid);
   });
 }
@@ -325,7 +326,7 @@ export function getChapterText(timeInSeconds: number) {
   return currentChap.label;
 }
 
-export function trackAdjacentChap(isForNavButtons: boolean) {
+export function trackAdjacentChap() {
   // A hack to make this function a tracker of progress. do not delete.  Ideally the progress would be updated as a store signal, but the BC player has its own events that are pushed as a store.
   // eslint-disable-next-line
   const progress = vidProgress();

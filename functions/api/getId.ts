@@ -1,8 +1,7 @@
-export const onRequestGet: PagesFunction = async (context) => {
-  const request: Request = context.request;
-  const env = context.env;
-  const url = new URL(request.url);
+import type {cloudflareEnv} from "@customTypes/types";
 
+export const onRequestGet: PagesFunction = async (context) => {
+  const env = context.env as cloudflareEnv & typeof context.env;
   const accountId = String(env.ACCOUNT_ID);
   const playerId = String(env.PLAYER_ID);
 

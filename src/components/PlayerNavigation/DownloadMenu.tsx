@@ -5,23 +5,13 @@ import {WholeDownloadSelect} from "@components/DownloadForm/DownloadSelect";
 
 import {downloadPreference, setDownloadPreference} from "@lib/store";
 import {Show} from "solid-js";
-import type {customVideoSources, wholeBookPresets} from "@customTypes/types";
+import type {wholeBookPresets} from "@customTypes/types";
 import {SingleDownloadSelect} from "@components/DownloadForm/DownloadSelect";
 import {
   currentMp4Sources,
   wholeBooksOptionsForSelect,
   populateSwPayload,
 } from "@lib/UI";
-
-type IpopulateSwPayload =
-  | {
-      type: "VID";
-      val: string;
-    }
-  | {
-      type: "BOOK";
-      val: wholeBookPresets;
-    };
 
 interface IDownloadMenu {
   formDataRef: HTMLFormElement | undefined;

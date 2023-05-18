@@ -1,11 +1,7 @@
 import {clientsClaim} from "workbox-core";
 import {downloadZip} from "client-zip";
 import {SW_CACHE_NAME} from "./constants";
-import {
-  cleanupOutdatedCaches,
-  createHandlerBoundToURL,
-  precacheAndRoute,
-} from "workbox-precaching";
+import {cleanupOutdatedCaches, precacheAndRoute} from "workbox-precaching";
 import type {customVideoSources} from "@customTypes/types";
 declare const self: ServiceWorkerGlobalScope;
 
@@ -13,8 +9,7 @@ self.skipWaiting();
 clientsClaim();
 cleanupOutdatedCaches();
 
-let precacheUrls = self.__WB_MANIFEST;
-precacheAndRoute(precacheUrls);
+precacheAndRoute(self.__WB_MANIFEST);
 
 self.addEventListener("fetch", async (event) => {
   if (event.request.url.match(/sw-handle-saving/)) {
@@ -106,7 +101,7 @@ self.addEventListener("fetch", async (event) => {
         });
         testCache.put(name, res);
       }
-      let {readable, writable} = new TransformStream();
+      const {readable, writable} = new TransformStream();
       const response = downloadZip(lazyFetch());
       response.body?.pipeTo(writable);
       if (downloadToDevice) {

@@ -9,5 +9,5 @@ export const supportedLanguages = [
     name: "French",
   },
 ] as const;
-type supportedLocales = "en" | "fr";
+// type supportedLocales = "en" | "fr";
 export const baseLocale = "en";

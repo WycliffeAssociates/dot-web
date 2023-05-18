@@ -1,8 +1,8 @@
-import type {AnyAsyncFunction} from "@customTypes/types";
 import {createSignal} from "solid-js";
 import {createStore} from "solid-js/store";
-import type {VideoJsPlayer} from "video.js";
+// import type {VideoJsPlayer} from "@types/video.js";
 import type {IDownloadPreferences, IVidWithCustom} from "@customTypes/types";
+// import type {VideoJsPlayer} from "video.js";
 
 const [downloadPreference, setDownloadPreference] =
   createSignal<IDownloadPreferences>({
@@ -12,11 +12,9 @@ const [downloadPreference, setDownloadPreference] =
     swPayload:
       null /* arr of vid {name, refid, src, size} objects that sw can digest */,
   });
+// SSR will populate this when it renders.
 const [currentVid, setCurrentVid] = createStore<IVidWithCustom>(
-  {},
-  {
-    name: "currentVid",
-  }
+  {} as IVidWithCustom
 );
 const [currentPlaylist, setCurrentPlaylist] =
   createSignal<Record<string | number | symbol, IVidWithCustom[]>>();

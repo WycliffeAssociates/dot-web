@@ -1,19 +1,5 @@
-import type {
-  IVidWithCustom,
-  customVideoSources,
-  userPreferencesI,
-  wholeBookPresets,
-  IpopulateSwPayload,
-} from "@customTypes/types";
-import {
-  For,
-  JSX,
-  Show,
-  createEffect,
-  createResource,
-  createSignal,
-  onMount,
-} from "solid-js";
+import type {IVidWithCustom, userPreferencesI} from "@customTypes/types";
+import {For, Show, createSignal, onMount} from "solid-js";
 import {
   mobileHorizontalPadding,
   CONTAINER,
@@ -26,7 +12,6 @@ import {
   handleProgressBarHover,
   handlePlayRateChange,
   handleChapters,
-  getSavedResponseFromCache,
   handleVerseProvidedInRouting,
   getAdjacentChap,
   trackAdjacentChap,
@@ -35,17 +20,12 @@ import {
   currentMp4Sources,
 } from "@lib/UI";
 import {
-  setDownloadPreference,
   currentVid,
   setCurrentVid,
-  currentBook,
   setCurrentBook,
   currentChapLabel,
-  setCurrentChapLabel,
   vjsPlayer,
   setVjsPlayer,
-  showDownloadMenu,
-  setShowDownloadMenu,
   playerSpeed,
   setPlayerSpeed,
   setVidProgress,
@@ -57,26 +37,18 @@ import {
   LoadingSpinner,
   SpeedIcon,
   IconDownload,
-  IconSavedLocally,
   IconMaterialSymbolsChevronLeft,
   IconMaterialSymbolsChevronRight,
 } from "@components/Icons";
 import {ChapterList} from "@components/PlayerNavigation/ChaptersList";
 import {SeekBarChapterText} from "@components/Player/SeekBarText";
-import {DownloadMenu} from "@components/PlayerNavigation/DownloadMenu";
 import {PLAYER_LOADER_OPTIONS} from "src/constants";
 import {useI18n} from "@solid-primitives/i18n";
 import {DOWNLOAD_SERVICE_WORK_URL, getCfBcIds} from "@lib/routes";
 import {throttle} from "@solid-primitives/scheduled";
 import {createResizeObserver} from "@solid-primitives/resize-observer";
-import {HiddenForm} from "@components/DownloadForm/HiddenForm";
 
-import {
-  convertTimeToSeconds,
-  bytesToMb,
-  normalizeBookName,
-  formatPlayListName,
-} from "@utils";
+import {normalizeBookName, formatPlayListName} from "@utils";
 
 // first poster with button that looks like play button
 // vid data not loaded until a chapter is picked
@@ -89,26 +61,24 @@ interface IVidPlayerProps {
     chap: IVidWithCustom;
     verseRouting: string | undefined;
   };
+  videojsInitalDict: Record<string, string> | undefined;
   userPreferences: userPreferencesI | undefined;
 }
 export function VidPlayer(props: IVidPlayerProps) {
   // I'm using the store.ts file as a way to pass around state without context.  (e.g. singletons). These setX calls at the top here run on the server once (since calling setX on any store on server is not the same value the client receives during hydration.)
   setCurrentVid(props.initialData.chap);
   setCurrentBook(props.initialData.vids);
+  // next two lines disabled due to ssr and setting initial values
+  // eslint-disable-next-line solid/reactivity
   setPlayerSpeed(props.userPreferences?.playbackSpeed || "1");
+  // eslint-disable-next-line solid/reactivity
   setCurrentPlaylist(props.vids);
-  const [isSaved, {mutate, refetch}] = createResource(
-    currentVid,
-    getSavedResponseFromCache
-  );
 
-  const [t, {add, locale, dict}] = useI18n();
+  const [t] = useI18n();
   const [showChapSliderButtons, setShowChapSliderButtons] = createSignal(true);
   const [jumpingForwardAmount, setJumpingForwardAmount] = createSignal();
   const [jumpingBackAmount, setJumpingBackAmount] = createSignal();
   const jumpAmount = 5;
-
-  let tapTimeoutId: number | null;
 
   let playerRef: HTMLDivElement | undefined;
   let playerRefContainer: HTMLDivElement | undefined;
@@ -118,35 +88,16 @@ export function VidPlayer(props: IVidPlayerProps) {
 
   //=============== state setters / derived  =============
 
-  // type wholeBookUrlsSpecificParams = {
-  //   preset: wholeBookPresets;
-  // };
-
-  // todo: revise
-  async function playFromSw(savedResponse: Response) {
-    const blob = await savedResponse.blob();
-    const staticUrl = URL.createObjectURL(blob);
-    vjsPlayer()?.src({
-      type: "video/mp4",
-      src: staticUrl,
-    });
-    vjsPlayer()?.play();
-  }
-
   onMount(async () => {
-    // setCookie(
-    //   "user",
-    //   JSON.stringify({
-    //     useSavedVid: true,
-    //   })
-    // );
-    // Todo: replace the state when moving beyond each chapter chunk?
-    // setTimeout(() => {
-    //   history.pushState(null, "", `${location.href}?q=t`);
-    // }, 5000);
     const curVid = currentVid;
     if (!curVid) return;
-    const {accountId, playerId} = await getCfBcIds(window.location.origin);
+    const creds = await getCfBcIds(window.location.origin);
+    if (!creds) {
+      return (window.location.href = `${window.location.origin}/404`);
+    }
+    const {accountId, playerId} = creds;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore.  There are no types for this below
     const playerModule = await import("@brightcove/player-loader");
     const options = {
       ...PLAYER_LOADER_OPTIONS,
@@ -157,11 +108,29 @@ export function VidPlayer(props: IVidPlayerProps) {
     };
 
     const vPlayer = await playerModule.default(options);
+    // if (props.videojsInitalDict && window.videojs) {
+    //   console.log("adding lang from initial dict");
+    //   window.videojs.addLanguage(navigator.language, props.videojsInitalDict);
+    // }
     // set state for later
     setVjsPlayer(vPlayer.ref);
     console.log({vPlayer});
     //  inline
     vPlayer.ref.playsinline(true);
+    if (props.videojsInitalDict) {
+      const currentDictVidJs = vPlayer.ref.languages_[navigator.language];
+      const completeDict = {
+        ...props.videojsInitalDict,
+        ...currentDictVidJs,
+      };
+      vPlayer.ref.languages_[navigator.language] = completeDict;
+    }
+    vPlayer.ref.language(navigator.language);
+
+    window.setTimeout(() => {
+      console.log("running that timeout");
+      vPlayer.ref.controlBar.playToggle.controlText_ = "Test me!";
+    }, 1000 * 8);
 
     // update url
     // todo: buggy
@@ -169,22 +138,23 @@ export function VidPlayer(props: IVidPlayerProps) {
       const curVid = currentVid;
       const currentTime = vjsPlayer()?.currentTime();
 
+      const newPathArr = [];
+      const book = curVid.book;
+      const currentBookChapter = curVid.chapter;
+      if (book) newPathArr.push(book);
+      if (currentBookChapter) newPathArr.push(currentBookChapter);
       // if chapters.. replaceState with the 1Jn.1.2 chapter, where the last number is the beginning of the current chapter
-      if (!curVid || !curVid.chapterMarkers || !currentTime) return;
-      const curChapter = curVid.chapterMarkers.find((marker) => {
-        return (
-          marker.chapterStart < currentTime && marker.chapterEnd > currentTime
-        );
-      });
-      if (!curChapter) return;
-      const parts = window.location.pathname.split("/");
-      const bookChap = parts[parts.length - 1];
-      const bookChapParts = bookChap.split(".");
-      let newUrl: string | null = null;
-      newUrl = `${window.location.origin}/${parts[1]}/${curVid.book}.${curVid.chapter}`;
-      if (curChapter.chapterStart) {
-        newUrl = newUrl.concat(`.${curChapter.startVerse}`);
+      if (curVid.chapterMarkers && currentTime) {
+        const curChapter = curVid.chapterMarkers.find((marker) => {
+          return (
+            marker.chapterStart < currentTime && marker.chapterEnd > currentTime
+          );
+        });
+        if (curChapter && curChapter.startVerse)
+          newPathArr.push(curChapter.startVerse);
       }
+
+      const newUrl = `${window.location.origin}/${newPathArr.join(".")}`;
       history.replaceState(null, "", newUrl);
     }, 1000);
     vPlayer.ref.on("progress", () => {
@@ -193,7 +163,7 @@ export function VidPlayer(props: IVidPlayerProps) {
       currentTime && setVidProgress(currentTime);
     });
     console.log(vPlayer.ref);
-    let videoJsDomEl = vPlayer.ref.el();
+    const videoJsDomEl = vPlayer.ref.el();
     handleVideoJsTaps({
       el: videoJsDomEl,
       rightDoubleFxn(number) {
@@ -293,6 +263,8 @@ export function VidPlayer(props: IVidPlayerProps) {
     );
     // get chapters for first video if exist
 
+    // setup. The reactivity in this case is teh props, adn the props aren't going to change without routing to anotehr page.
+    // eslint-disable-next-line solid/reactivity
     vPlayer.ref.one("loadedmetadata", async () => {
       handleChapters(curVid);
       if (props.initialData.verseRouting) {
@@ -339,7 +311,7 @@ export function VidPlayer(props: IVidPlayerProps) {
       }
     );
 
-    window.addEventListener("popstate", (event) => handlePopState());
+    window.addEventListener("popstate", () => handlePopState());
 
     createResizeObserver(chaptersContainerRef, (refRect, refNode) => {
       const chapterBtnTrack = document.querySelector(
@@ -386,7 +358,6 @@ export function VidPlayer(props: IVidPlayerProps) {
             id="seekRippleBackward"
             class="absolute w-1/4  top-0 left-0 bottom-0  grid place-content-center rounded-[0%_100%_100%_0%_/_50%_50%_50%_50%] z-40  capitalize font-bold text-base pointer-events-none seekRipple"
           >
-            {" "}
             {String(jumpingBackAmount())}
           </div>
         </Show>
@@ -395,7 +366,6 @@ export function VidPlayer(props: IVidPlayerProps) {
             id="seekRippleForward"
             class="absolute w-1/4  top-0 right-0 bottom-0 seekRipple  grid place-content-center capitalize font-bold text-base z-40 rounded-[100%_0%_0%_100%_/_50%_50%_50%_50%] pointer-events-none"
           >
-            {" "}
             {String(jumpingForwardAmount())}
           </div>
         </Show>
@@ -437,19 +407,9 @@ export function VidPlayer(props: IVidPlayerProps) {
               <SpeedIcon />
             </span>
             <span class="inline-block ml-2">{playerSpeed()}</span>
-            {/* todo: pull out */}
-            <Show when={isSaved()?.isSaved}>
-              <IconSavedLocally classNames="text-green-700" />
-              <button
-                class="p-2 rounded-full bg-primary"
-                onClick={() => playFromSw(isSaved()?.response!)}
-              >
-                SW
-              </button>
-            </Show>
           </span>
           {/* Speed Preference */}
-          <div data-title="openDownloadSetting" class="relative ml-auto">
+          <div data-title="downloadCurrentVid" class="relative ml-auto">
             <form
               action={DOWNLOAD_SERVICE_WORK_URL}
               method="post"
@@ -469,13 +429,6 @@ export function VidPlayer(props: IVidPlayerProps) {
                 <IconDownload classNames="hover:text-primary" />
               </button>
             </form>
-
-            {/* <HiddenForm name={formName} /> */}
-            <div class="absolute right-0 z-10   dark:bg-neutral-900 bg-neutral-100 hidden pointer-events-none">
-              <Show when={showDownloadMenu()}>
-                <DownloadMenu formDataRef={formDataRef} formName={formName} />
-              </Show>
-            </div>
           </div>
         </div>
         <div class="flex">
@@ -538,10 +491,14 @@ export function VidPlayer(props: IVidPlayerProps) {
         class={`${mobileHorizontalPadding} py-2 bg-primary dark:bg-surface/05 text-base rounded-tr-xl rounded-tl-xl  scrollbar-hide min-h-200px`}
       >
         <h2 class="text-white dark:text-neutral-200 font-bold">
-          Bible Selection
+          {t("bibleSelection", undefined, "Bible Selection")}
         </h2>
         <p class="text-white dark:text-neutral-200">
-          Choose a book of the bible to watch here.
+          {t(
+            "chooseABook",
+            undefined,
+            "Choose a book of the bible to watch here."
+          )}
         </p>
         <div class="relative h-full sm:h-auto ">
           <div

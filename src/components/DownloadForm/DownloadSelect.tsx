@@ -1,10 +1,6 @@
 import {Select} from "@kobalte/core";
 import {Show} from "solid-js";
-import type {
-  AnyFunction,
-  customVideoSources,
-  wholeBookPresets,
-} from "@customTypes/types";
+import type {customVideoSources, wholeBookPresets} from "@customTypes/types";
 import {bytesToMb} from "@lib/utils";
 
 interface ICommonSelect {
@@ -90,7 +86,6 @@ interface ISingleVidSelect extends ICommonSelect {
   onValueChange: (arg: string) => void;
 }
 export function SingleDownloadSelect(props: ISingleVidSelect) {
-  props.onValueChange(String(props.selectOptions?.[0].size));
   return (
     <Show when={props.selectOptions}>
       <Select.Root

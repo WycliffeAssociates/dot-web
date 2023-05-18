@@ -17,8 +17,8 @@ interface IAppWrapperProps {
     chap: IVidWithCustom;
     verseRouting: string | undefined;
   };
-
   userPreferences: userPreferencesI | undefined;
+  videojsInitalDict: Record<string, string> | undefined;
 }
 export function AppWrapper(props: IAppWrapperProps) {
   return (
@@ -28,6 +28,7 @@ export function AppWrapper(props: IAppWrapperProps) {
         playlist={props.playlist}
         userPreferences={props.userPreferences}
         vids={props.vids}
+        videojsInitalDict={props.videojsInitalDict}
       />
     </I18nProvider>
   );

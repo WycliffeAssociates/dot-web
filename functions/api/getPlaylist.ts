@@ -1,8 +1,10 @@
 import {playbackApi} from "@customTypes/Api";
+import type {cloudflareEnv} from "@customTypes/types";
 
 export const onRequestGet: PagesFunction = async (context) => {
   const request: Request = context.request;
-  const env = context.env;
+  const env = context.env as cloudflareEnv & typeof context.env;
+
   const url = new URL(request.url);
   const playlist = url.searchParams?.get("playlist") as string;
   const policyKey = env.POLICY_KEY;

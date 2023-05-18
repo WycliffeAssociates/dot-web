@@ -1,9 +1,5 @@
 import type {i18nDictWithLangCode} from "@customTypes/types";
-import {
-  I18nContext,
-  createI18nContext,
-  createChainedI18nContext,
-} from "@solid-primitives/i18n";
+import {I18nContext, createI18nContext} from "@solid-primitives/i18n";
 import type {JSX} from "solid-js";
 
 interface i18Props {
