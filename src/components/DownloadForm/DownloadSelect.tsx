@@ -90,6 +90,7 @@ interface ISingleVidSelect extends ICommonSelect {
   onValueChange: (arg: string) => void;
 }
 export function SingleDownloadSelect(props: ISingleVidSelect) {
+  props.onValueChange(String(props.selectOptions?.[0].size));
   return (
     <Show when={props.selectOptions}>
       <Select.Root
@@ -97,6 +98,7 @@ export function SingleDownloadSelect(props: ISingleVidSelect) {
         name={props.formName}
         flip={false}
         hideWhenDetached={true}
+        defaultValue={String(props.selectOptions?.[0].size)}
         options={props.selectOptions}
         onValueChange={props.onValueChange}
         optionValue={(val) => String(val.size)}

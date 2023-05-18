@@ -4,6 +4,7 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "baseUrl": ".",
+    "allowImportingTsExtensions": true,
     "lib": ["ESNext", "DOM", "WebWorker"],
     "types": [
       "astro/client",

@@ -517,8 +517,8 @@ export function handlePopState() {
   if (!currPlaylist) return;
   // const currBook = currentBook();
   // if (!currBook) return;
-  const parts = window.location.pathname.split("/");
-  const bookChap = parts[parts.length - 1];
+
+  const bookChap = window.location.pathname.replace("/", "");
   const bookChapParts = bookChap.split(".");
   const currBookSlug = bookChapParts[0];
   if (!currBookSlug) return;
@@ -545,7 +545,7 @@ export function handleProgressBarHover(event: Event) {
   const player = vjsPlayer();
   if (!player) return;
 
-  const seekBar = player.controlBar.progressControl.seekBar;
+  const seekBar = player.controlBar?.progressControl?.seekBar;
   const currentToolTip = document.querySelector(
     ".vjs-progress-control .vjs-mouse-display"
   ) as Element;
@@ -572,12 +572,11 @@ export function handleProgressBarHover(event: Event) {
 // }
 export function updateHistory(vid: IVidWithCustom, method: "PUSH" | "REPLACE") {
   if (import.meta.env.SSR) return;
-  const currentPath = window.location.pathname;
-  const parts = currentPath.split("/");
+
   const bookSegment = vid.custom_fields?.book;
   const chapSegment = String(Number(vid.custom_fields?.chapter));
   if (bookSegment && chapSegment) {
-    const finUrl = `${location.origin}/${parts[1]}/${bookSegment}.${chapSegment}`;
+    const finUrl = `${location.origin}/${bookSegment}.${chapSegment}`;
     if (window.location.href !== finUrl) {
       const plyr = vjsPlayer();
       plyr && plyr.pause();

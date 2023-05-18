@@ -57,6 +57,7 @@ self.addEventListener("fetch", async (event) => {
         sum += current.size;
         return sum;
       }, 0);
+      const fileName = payloadData[0].name;
 
       // const fetchPromises = arrUrls.map((url) => {
       //   return fetch(url);
@@ -112,7 +113,7 @@ self.addEventListener("fetch", async (event) => {
         return new Response(readable, {
           headers: {
             "Content-Type": "application/octet-stream; charset=utf-8",
-            "Content-Disposition": 'attachment; filename="dot.zip"',
+            "Content-Disposition": `attachment; filename=${fileName}.zip`,
             "Content-Length": String(totalSize),
           },
         });

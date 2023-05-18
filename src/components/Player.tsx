@@ -32,6 +32,7 @@ import {
   trackAdjacentChap,
   updateHistory,
   handleVideoJsTaps,
+  currentMp4Sources,
 } from "@lib/UI";
 import {
   setDownloadPreference,
@@ -65,9 +66,10 @@ import {SeekBarChapterText} from "@components/Player/SeekBarText";
 import {DownloadMenu} from "@components/PlayerNavigation/DownloadMenu";
 import {PLAYER_LOADER_OPTIONS} from "src/constants";
 import {useI18n} from "@solid-primitives/i18n";
-import {getCfBcIds} from "@lib/routes";
+import {DOWNLOAD_SERVICE_WORK_URL, getCfBcIds} from "@lib/routes";
 import {throttle} from "@solid-primitives/scheduled";
 import {createResizeObserver} from "@solid-primitives/resize-observer";
+import {HiddenForm} from "@components/DownloadForm/HiddenForm";
 
 import {
   convertTimeToSeconds,
@@ -435,6 +437,7 @@ export function VidPlayer(props: IVidPlayerProps) {
               <SpeedIcon />
             </span>
             <span class="inline-block ml-2">{playerSpeed()}</span>
+            {/* todo: pull out */}
             <Show when={isSaved()?.isSaved}>
               <IconSavedLocally classNames="text-green-700" />
               <button
@@ -447,13 +450,28 @@ export function VidPlayer(props: IVidPlayerProps) {
           </span>
           {/* Speed Preference */}
           <div data-title="openDownloadSetting" class="relative ml-auto">
-            <button
-              class=""
-              onClick={() => setShowDownloadMenu(!showDownloadMenu())}
+            <form
+              action={DOWNLOAD_SERVICE_WORK_URL}
+              method="post"
+              name={formName}
             >
-              <IconDownload classNames="hover:text-primary" />
-            </button>
-            <div class="absolute right-0 z-10   dark:bg-neutral-900 bg-neutral-100 ">
+              <input
+                type="hidden"
+                name="swPayload"
+                value={JSON.stringify([currentMp4Sources()?.[0]])}
+              />
+              <input
+                type="hidden"
+                name="swDownloadDevice"
+                value={String("true")}
+              />
+              <button type="submit" class="">
+                <IconDownload classNames="hover:text-primary" />
+              </button>
+            </form>
+
+            {/* <HiddenForm name={formName} /> */}
+            <div class="absolute right-0 z-10   dark:bg-neutral-900 bg-neutral-100 hidden pointer-events-none">
               <Show when={showDownloadMenu()}>
                 <DownloadMenu formDataRef={formDataRef} formName={formName} />
               </Show>
