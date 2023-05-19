@@ -62,6 +62,7 @@ interface IVidPlayerProps {
   userPreferences: userPreferencesI | undefined;
 }
 export function VidPlayer(props: IVidPlayerProps) {
+  console.log({props});
   // I'm using the store.ts file as a way to pass around state without context.  (e.g. singletons). These setX calls at the top here run on the server once (since calling setX on any store on server is not the same value the client receives during hydration.)
   setCurrentVid(props.initialData.chap);
   setCurrentBook(props.initialData.vids);
@@ -78,9 +79,7 @@ export function VidPlayer(props: IVidPlayerProps) {
 
   let playerRef: HTMLDivElement | undefined;
   let playerRefContainer: HTMLDivElement | undefined;
-  let formDataRef: HTMLFormElement | undefined;
   let chaptersContainerRef: HTMLDivElement | undefined;
-  let chapterBtnTrackRef: HTMLUListElement | undefined;
   const formName = "downloadData";
 
   //=============== OnMount augments video player  =============
