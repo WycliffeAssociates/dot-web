@@ -26,7 +26,7 @@ interface I18nWrapper extends ParentProps {
   initialDict: i18nDictWithLangCode;
 }
 export function Header(props: HeaderProps & I18nWrapper) {
-  console.log({props});
+  return <p>No header test</p>;
 
   return (
     <I18nWrappedHeader locale={props.locale} initialDict={props.initialDict}>
@@ -108,7 +108,7 @@ function HeaderInner(props: HeaderProps) {
             class="block ml-auto text-xl hover:(text-primary) focus:(text-primary) active:(scale-98)"
             onClick={() => setMenuIsOpen(!menuIsOpen())}
           >
-            <IconMajesticonsCloseLine />{" "}
+            <IconMajesticonsCloseLine />
           </button>
           <Show when={props.initialPath != "/"}>
             <a class="block hover:(text-primary underline)" href="/">
