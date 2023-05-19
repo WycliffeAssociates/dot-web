@@ -73,5 +73,7 @@ const initialData = {vids: defaultBook, chap: defaultChap, verseRouting:undefine
   >
       <AppWrapper client:load userPreferences={userPreferences} initialData={initialData} playlist={playlist} vids={bucketized} locale={preferredLocale} initialDict={initialDict} videojsInitalDict={videojsInitalDict}/>
  </div> 
-
+ <pre>
+   {JSON.stringify({userPreferences, initialData, preferredLocale, initialDict, videojsInitalDict, bucketized}, null, 2)}
+ </pre>
 </Layout>
