@@ -278,7 +278,6 @@ export function VidPlayer(props: IVidPlayerProps) {
             return (
               <li class="text-neutral-100 dark:text-neutral-200 py-1 w-full border-y border-base md:text-lg md:py-2">
                 <button
-                  onClick={}
                   class={`inline-flex gap-2 items-center hover:(text-surface font-bold underline) ${
                     props.initialData.chap.custom_fields?.book?.toUpperCase() ===
                     key.toUpperCase()
