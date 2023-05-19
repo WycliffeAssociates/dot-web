@@ -71,7 +71,7 @@ const initialData = {vids: defaultBook, chap: defaultChap, verseRouting:undefine
   <div
     class="grid grid-rows-[auto_auto_1fr] overflow-y-auto"
   >
-      <AppWrapper client:load userPreferences={userPreferences} initialData={initialData} playlist={playlist} vids={bucketized} locale={preferredLocale} initialDict={initialDict} videojsInitalDict={videojsInitalDict}/>
+      <AppWrapper client:only userPreferences={userPreferences} initialData={initialData} playlist={playlist} vids={bucketized} locale={preferredLocale} initialDict={initialDict} videojsInitalDict={videojsInitalDict}/>
  </div> 
  <!-- <pre>
    {JSON.stringify({userPreferences, initialData, preferredLocale, initialDict, videojsInitalDict, bucketized}, null, 2)}
