@@ -23,14 +23,14 @@ interface IAppWrapperProps {
 export function AppWrapper(props: IAppWrapperProps) {
   console.log({props});
   return (
-    // <I18nProvider locale={props.locale} initialDict={props.initialDict}>
-    <VidPlayer
-      initialData={props.initialData}
-      playlist={props.playlist}
-      userPreferences={props.userPreferences}
-      vids={props.vids}
-      videojsInitalDict={props.videojsInitalDict}
-    />
-    // </I18nProvider>
+    <I18nProvider locale={props.locale} initialDict={props.initialDict}>
+      <VidPlayer
+        initialData={props.initialData}
+        playlist={props.playlist}
+        userPreferences={props.userPreferences}
+        vids={props.vids}
+        videojsInitalDict={props.videojsInitalDict}
+      />
+    </I18nProvider>
   );
 }
