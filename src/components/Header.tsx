@@ -26,8 +26,6 @@ interface I18nWrapper extends ParentProps {
   initialDict: i18nDictWithLangCode;
 }
 export function Header(props: HeaderProps & I18nWrapper) {
-  return <p>No header test</p>;
-
   return (
     <I18nWrappedHeader locale={props.locale} initialDict={props.initialDict}>
       <HeaderInner {...props} />

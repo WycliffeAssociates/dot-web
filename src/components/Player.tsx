@@ -85,7 +85,6 @@ export function VidPlayer(props: IVidPlayerProps) {
   //=============== OnMount augments video player  =============
   // This uses the https://github.com/brightcove/player-loader package instead of bare video js for two reasons; One is convenience, but the other is that the analytics for the playlists and player is already set versus having to wire up all the analytics.  It also leaves some of the control that is exposed in the BC Player UI since it's basically configuring the script in BC.  This must be run on mount with a dynamic import since the brightcove player loader uses the window global, which of course, doesn't run in SSR.  Since most of the functionality on the page is related to the player, there is pretty much 0 interactivity until the player loads.
   onMount(async () => {
-    return;
     const curVid = currentVid;
     // mostly to satisfy ts
     if (!curVid) return;
@@ -256,50 +255,6 @@ export function VidPlayer(props: IVidPlayerProps) {
       manageShowingChapterArrows(refRect, setShowChapSliderButtons);
     });
   });
-  return (
-    <div>
-      <p>This is hardcoded</p>
-      <div
-        data-title="BookAndPlaylistName"
-        class={`${mobileHorizontalPadding} sm:(py-4)`}
-      >
-        <h1 class="font-bold">
-          {" "}
-          {normalizeBookName(
-            props.initialData.chap?.localizedBookName ||
-              props.initialData.chap.book
-          )}
-        </h1>
-        <p>{formatPlayListName(props.playlist)}</p>
-      </div>
-      <ul class="max-h-300px overflow-y-auto scrollbar-hide pt-8 pb-36 sm:(max-h-[50vh]) list-none">
-        <For each={Object.entries(props.vids)}>
-          {([key, book], idx) => {
-            return (
-              <li class="text-neutral-100 dark:text-neutral-200 py-1 w-full border-y border-base md:text-lg md:py-2">
-                <button
-                  class={`inline-flex gap-2 items-center hover:(text-surface font-bold underline) ${
-                    props.initialData.chap.custom_fields?.book?.toUpperCase() ===
-                    key.toUpperCase()
-                      ? "underline font-bold"
-                      : ""
-                  }`}
-                >
-                  <span class="bg-base text-primary dark:text-primary rounded-full p-4 h-0 w-0 inline-grid place-content-center">
-                    {idx() + 1}
-                  </span>
-                  {normalizeBookName(
-                    book.find((b) => !!b.localizedBookName)
-                      ?.localizedBookName || key
-                  )}
-                </button>
-              </li>
-            );
-          }}
-        </For>
-      </ul>
-    </div>
-  );
   //=============== state setters / derived  =============
   return (
     <div class={`overflow-x-hidden ${CONTAINER} w-full sm:(rounded-lg)`}>
