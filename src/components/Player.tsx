@@ -255,7 +255,58 @@ export function VidPlayer(props: IVidPlayerProps) {
       manageShowingChapterArrows(refRect, setShowChapSliderButtons);
     });
   });
-  return <p>Vid section. Does this cause a hydration error?</p>;
+  return (
+    <div>
+      <div
+        data-title="BookAndPlaylistName"
+        class={`${mobileHorizontalPadding} sm:(py-4)`}
+      >
+        <h1 class="font-bold">
+          {" "}
+          {normalizeBookName(currentVid?.localizedBookName || currentVid.book)}
+        </h1>
+        <p>{formatPlayListName(props.playlist)}</p>
+      </div>
+      <ul class="max-h-300px overflow-y-auto scrollbar-hide pt-8 pb-36 sm:(max-h-[50vh]) list-none">
+        <For each={Object.entries(props.vids)}>
+          {([key, book], idx) => {
+            return (
+              <li class="text-neutral-100 dark:text-neutral-200 py-1 w-full border-y border-base md:text-lg md:py-2">
+                <button
+                  onClick={() => {
+                    setNewBook(book);
+                    updateHistory(book[0], "PUSH");
+
+                    // see if need to resize buttons track
+                    const refRect =
+                      chaptersContainerRef?.getBoundingClientRect();
+                    manageShowingChapterArrows(
+                      refRect,
+                      setShowChapSliderButtons
+                    );
+                  }}
+                  class={`inline-flex gap-2 items-center hover:(text-surface font-bold underline) ${
+                    currentVid.custom_fields?.book?.toUpperCase() ===
+                    key.toUpperCase()
+                      ? "underline font-bold"
+                      : ""
+                  }`}
+                >
+                  <span class="bg-base text-primary dark:text-primary rounded-full p-4 h-0 w-0 inline-grid place-content-center">
+                    {idx() + 1}
+                  </span>
+                  {normalizeBookName(
+                    book.find((b) => !!b.localizedBookName)
+                      ?.localizedBookName || key
+                  )}
+                </button>
+              </li>
+            );
+          }}
+        </For>
+      </ul>
+    </div>
+  );
   //=============== state setters / derived  =============
   return (
     <div class={`overflow-x-hidden ${CONTAINER} w-full sm:(rounded-lg)`}>
