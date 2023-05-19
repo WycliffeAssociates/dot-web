@@ -18,7 +18,7 @@ import { getPlaylistData } from "@lib/routes";
 import config from 'src/domainConfig.ts'
 let originToMatch = import.meta.env.PROD ? Astro.url.origin : "benin";
 // todo: take out on deploy
-if (originToMatch.includes("dot-web.pages.dev")) {
+if (originToMatch.includes("dot-web.pages.dev") || originToMatch.includes("127.0.0.1") ) {
   originToMatch = 'benin'
 }
 let matchingKey = Object.keys(config).find(key => originToMatch.toLowerCase().includes(key.toLowerCase()));
@@ -37,7 +37,7 @@ const initialDict = {
 // import videojs from 'video.js'
 let videojsInitalDict;
 try {
-  let module = await import (`/node_modules/video.js/dist/lang/${preferredLocale}.json`) 
+  let module = await import (`../node_modules/video.js/dist/lang/${preferredLocale}.json`) 
     videojsInitalDict = module.default as Record<string, string>;
 } catch (error) {
   console.error({error})

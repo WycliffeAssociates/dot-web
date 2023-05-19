@@ -34,7 +34,7 @@ const initialDict = {
 }
 let videojsInitalDict;
 try {
-  let module = await import (`/node_modules/video.js/dist/lang/${preferredLocale}.json`)  
+  let module = await import (`../node_modules/video.js/dist/lang/${preferredLocale}.json`)  
     videojsInitalDict = module.default as Record<string, string>;
 } catch (error) {
   console.error({error})
