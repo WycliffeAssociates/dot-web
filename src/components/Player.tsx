@@ -84,177 +84,177 @@ export function VidPlayer(props: IVidPlayerProps) {
 
   //=============== OnMount augments video player  =============
   // This uses the https://github.com/brightcove/player-loader package instead of bare video js for two reasons; One is convenience, but the other is that the analytics for the playlists and player is already set versus having to wire up all the analytics.  It also leaves some of the control that is exposed in the BC Player UI since it's basically configuring the script in BC.  This must be run on mount with a dynamic import since the brightcove player loader uses the window global, which of course, doesn't run in SSR.  Since most of the functionality on the page is related to the player, there is pretty much 0 interactivity until the player loads.
-  // onMount(async () => {
-  //   const curVid = currentVid;
-  //   // mostly to satisfy ts
-  //   if (!curVid) return;
-  //   // get env vars from bc.
-  //   const creds = await getCfBcIds(window.location.origin);
-  //   if (!creds) {
-  //     return (window.location.href = `${window.location.origin}/404`);
-  //   }
-  //   const {accountId, playerId} = creds;
-  //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //   // @ts-ignore.  There are no types for this below
-  //   const playerModule = await import("@brightcove/player-loader");
-  //   const options = {
-  //     ...PLAYER_LOADER_OPTIONS,
-  //     refNode: playerRef,
-  //     videoId: curVid.id,
-  //     accountId,
-  //     playerId,
-  //   };
+  onMount(async () => {
+    const curVid = currentVid;
+    // mostly to satisfy ts
+    if (!curVid) return;
+    // get env vars from bc.
+    const creds = await getCfBcIds(window.location.origin);
+    if (!creds) {
+      return (window.location.href = `${window.location.origin}/404`);
+    }
+    const {accountId, playerId} = creds;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore.  There are no types for this below
+    const playerModule = await import("@brightcove/player-loader");
+    const options = {
+      ...PLAYER_LOADER_OPTIONS,
+      refNode: playerRef,
+      videoId: curVid.id,
+      accountId,
+      playerId,
+    };
 
-  //   const vPlayer = await playerModule.default(options);
-  //   setVjsPlayer(vPlayer.ref);
+    const vPlayer = await playerModule.default(options);
+    setVjsPlayer(vPlayer.ref);
 
-  //   //  inline prevents auto full screen for mobile
-  //   vPlayer.ref.playsinline(true);
-  //   // Set to the langauge passed from the request header. Unfortunately at time of authoring, neither dictionary for videojs seems complete, so if we have an initial complete, so we import the json and merge in everything for a maximal dict if we have it, otherwise just use what comes on the player from BC.
-  //   if (props.videojsInitalDict) {
-  //     const currentDictVidJs = vPlayer.ref.languages_[navigator.language];
-  //     const completeDict = {
-  //       ...props.videojsInitalDict,
-  //       ...currentDictVidJs,
-  //     };
-  //     vPlayer.ref.languages_[navigator.language] = completeDict;
-  //   }
-  //   vPlayer.ref.language(navigator.language);
+    //  inline prevents auto full screen for mobile
+    vPlayer.ref.playsinline(true);
+    // Set to the langauge passed from the request header. Unfortunately at time of authoring, neither dictionary for videojs seems complete, so if we have an initial complete, so we import the json and merge in everything for a maximal dict if we have it, otherwise just use what comes on the player from BC.
+    if (props.videojsInitalDict) {
+      const currentDictVidJs = vPlayer.ref.languages_[navigator.language];
+      const completeDict = {
+        ...props.videojsInitalDict,
+        ...currentDictVidJs,
+      };
+      vPlayer.ref.languages_[navigator.language] = completeDict;
+    }
+    vPlayer.ref.language(navigator.language);
 
-  //   // Incrementally update the URL to the current book/chapter/verse
-  //   const throttleProgressUpdates = throttle(() => {
-  //     const curVid = currentVid;
-  //     const currentTime = vjsPlayer()?.currentTime();
+    // Incrementally update the URL to the current book/chapter/verse
+    const throttleProgressUpdates = throttle(() => {
+      const curVid = currentVid;
+      const currentTime = vjsPlayer()?.currentTime();
 
-  //     const newPathArr = [];
-  //     const book = curVid.book;
-  //     const currentBookChapter = curVid.chapter;
-  //     if (book) newPathArr.push(book);
-  //     if (currentBookChapter) newPathArr.push(currentBookChapter);
-  //     // if chapters.. replaceState with the 1Jn.1.2 chapter, where the last number is the beginning of the current chapter
-  //     if (curVid.chapterMarkers && currentTime) {
-  //       const curChapter = curVid.chapterMarkers.find((marker) => {
-  //         return (
-  //           marker.chapterStart < currentTime && marker.chapterEnd > currentTime
-  //         );
-  //       });
-  //       if (curChapter && curChapter.startVerse)
-  //         newPathArr.push(curChapter.startVerse);
-  //     }
+      const newPathArr = [];
+      const book = curVid.book;
+      const currentBookChapter = curVid.chapter;
+      if (book) newPathArr.push(book);
+      if (currentBookChapter) newPathArr.push(currentBookChapter);
+      // if chapters.. replaceState with the 1Jn.1.2 chapter, where the last number is the beginning of the current chapter
+      if (curVid.chapterMarkers && currentTime) {
+        const curChapter = curVid.chapterMarkers.find((marker) => {
+          return (
+            marker.chapterStart < currentTime && marker.chapterEnd > currentTime
+          );
+        });
+        if (curChapter && curChapter.startVerse)
+          newPathArr.push(curChapter.startVerse);
+      }
 
-  //     const newUrl = `${window.location.origin}/${newPathArr.join(".")}`;
-  //     history.replaceState(null, "", newUrl);
-  //   }, 1000);
-  //   vPlayer.ref.on("progress", () => {
-  //     throttleProgressUpdates();
-  //     const currentTime = vjsPlayer()?.currentTime();
-  //     currentTime && setVidProgress(currentTime);
-  //   });
+      const newUrl = `${window.location.origin}/${newPathArr.join(".")}`;
+      history.replaceState(null, "", newUrl);
+    }, 1000);
+    vPlayer.ref.on("progress", () => {
+      throttleProgressUpdates();
+      const currentTime = vjsPlayer()?.currentTime();
+      currentTime && setVidProgress(currentTime);
+    });
 
-  //   // Handle taps on mobile for play/pause/fast forward
-  //   const videoJsDomEl = vPlayer.ref.el();
-  //   handleVideoJsTaps({
-  //     el: videoJsDomEl,
-  //     rightDoubleFxn(number) {
-  //       const curTime = vjsPlayer()?.currentTime();
-  //       if (!curTime) return;
-  //       // the extra minus jumpAmount is to account for fact that min tap amoutn is 2 to diff btw double and single taps, so we still want to allow the smallest measure of jump back;
-  //       const newTime = number * jumpAmount + curTime - jumpAmount;
-  //       vjsPlayer()?.currentTime(newTime);
-  //       setJumpingForwardAmount(null);
-  //       videoJsDomEl.classList.remove("vjs-user-active");
-  //     },
-  //     leftDoubleFxn(number) {
-  //       const curTime = vjsPlayer()?.currentTime();
-  //       if (!curTime) return;
+    // Handle taps on mobile for play/pause/fast forward
+    const videoJsDomEl = vPlayer.ref.el();
+    handleVideoJsTaps({
+      el: videoJsDomEl,
+      rightDoubleFxn(number) {
+        const curTime = vjsPlayer()?.currentTime();
+        if (!curTime) return;
+        // the extra minus jumpAmount is to account for fact that min tap amoutn is 2 to diff btw double and single taps, so we still want to allow the smallest measure of jump back;
+        const newTime = number * jumpAmount + curTime - jumpAmount;
+        vjsPlayer()?.currentTime(newTime);
+        setJumpingForwardAmount(null);
+        videoJsDomEl.classList.remove("vjs-user-active");
+      },
+      leftDoubleFxn(number) {
+        const curTime = vjsPlayer()?.currentTime();
+        if (!curTime) return;
 
-  //       const newTime = curTime - number * jumpAmount - jumpAmount;
-  //       vjsPlayer()?.currentTime(newTime);
-  //       setJumpingBackAmount(null);
-  //       videoJsDomEl.classList.remove("vjs-user-active");
-  //     },
-  //     singleTapFxn() {
-  //       const plyr = vjsPlayer();
-  //       if (!plyr) return;
-  //       if (plyr.paused()) {
-  //         plyr.play();
-  //       } else {
-  //         plyr.pause();
-  //       }
-  //     },
-  //     doubleTapUiClue(dir, tapsCount) {
-  //       if (dir == "LEFT") {
-  //         setJumpingBackAmount(tapsCount * jumpAmount - 5);
-  //         setJumpingForwardAmount(null);
-  //       } else if (dir == "RIGHT") {
-  //         setJumpingBackAmount(null);
-  //         setJumpingForwardAmount(tapsCount * jumpAmount - 5);
-  //       }
-  //     },
-  //   });
+        const newTime = curTime - number * jumpAmount - jumpAmount;
+        vjsPlayer()?.currentTime(newTime);
+        setJumpingBackAmount(null);
+        videoJsDomEl.classList.remove("vjs-user-active");
+      },
+      singleTapFxn() {
+        const plyr = vjsPlayer();
+        if (!plyr) return;
+        if (plyr.paused()) {
+          plyr.play();
+        } else {
+          plyr.pause();
+        }
+      },
+      doubleTapUiClue(dir, tapsCount) {
+        if (dir == "LEFT") {
+          setJumpingBackAmount(tapsCount * jumpAmount - 5);
+          setJumpingForwardAmount(null);
+        } else if (dir == "RIGHT") {
+          setJumpingBackAmount(null);
+          setJumpingForwardAmount(tapsCount * jumpAmount - 5);
+        }
+      },
+    });
 
-  //   // On desktop, handle hotkeys for seek forward and backward
-  //   vPlayer.ref.on("keydown", (e: KeyboardEvent) =>
-  //     playerCustomHotKeys({
-  //       e,
-  //       vjsPlayer: vPlayer.ref,
-  //       increment: jumpAmount,
-  //       setJumpingBackAmount,
-  //       setJumpingForwardAmount,
-  //     })
-  //   );
+    // On desktop, handle hotkeys for seek forward and backward
+    vPlayer.ref.on("keydown", (e: KeyboardEvent) =>
+      playerCustomHotKeys({
+        e,
+        vjsPlayer: vPlayer.ref,
+        increment: jumpAmount,
+        setJumpingBackAmount,
+        setJumpingForwardAmount,
+      })
+    );
 
-  //   // setup. The reactivity in this case is the props, adn the props aren't going to change without routing to anotehr page.
-  //   // eslint-disable-next-line solid/reactivity
-  //   vPlayer.ref.one("loadedmetadata", async () => {
-  //     // chapters not in the sense of book/chapter but in the sense of cue points in the video that mark verses
-  //     handleChapters(curVid);
-  //     // If we have a verse in Url (e.g.) Mrk.01.002, jump straight to that segment
-  //     if (props.initialData.verseRouting) {
-  //       const applicableChapter = await handleVerseProvidedInRouting(
-  //         curVid,
-  //         props.initialData.verseRouting
-  //       );
-  //       if (applicableChapter) {
-  //         vPlayer.ref.currentTime(applicableChapter.chapterStart);
-  //       }
-  //     }
+    // setup. The reactivity in this case is the props, adn the props aren't going to change without routing to anotehr page.
+    // eslint-disable-next-line solid/reactivity
+    vPlayer.ref.one("loadedmetadata", async () => {
+      // chapters not in the sense of book/chapter but in the sense of cue points in the video that mark verses
+      handleChapters(curVid);
+      // If we have a verse in Url (e.g.) Mrk.01.002, jump straight to that segment
+      if (props.initialData.verseRouting) {
+        const applicableChapter = await handleVerseProvidedInRouting(
+          curVid,
+          props.initialData.verseRouting
+        );
+        if (applicableChapter) {
+          vPlayer.ref.currentTime(applicableChapter.chapterStart);
+        }
+      }
 
-  //     // Adjust speed if present in user preference cookie (just in case someone consistently wants to watch things fast)
-  //     if (props.userPreferences?.playbackSpeed) {
-  //       vjsPlayer()?.playbackRate(Number(props.userPreferences?.playbackSpeed));
-  //     }
-  //   });
+      // Adjust speed if present in user preference cookie (just in case someone consistently wants to watch things fast)
+      if (props.userPreferences?.playbackSpeed) {
+        vjsPlayer()?.playbackRate(Number(props.userPreferences?.playbackSpeed));
+      }
+    });
 
-  //   //handle the actual hovering to update the chapter spot
-  //   // This section adds an indicator of the chapters markers on hover
-  //   const seekBar = vPlayer.ref.controlBar.progressControl.seekBar;
-  //   const handleProgressHover = debounce(handleProgressBarHover, 10);
-  //   seekBar.on("mouseover", handleProgressHover);
-  //   seekBar.el().addEventListener(
-  //     "mouseover",
-  //     () => {
-  //       const currentToolTip = document.querySelector(
-  //         ".vjs-progress-control .vjs-mouse-display"
-  //       ) as Element;
-  //       const seekBarEl = (
-  //         <SeekBarChapterText text={currentChapLabel} />
-  //       ) as Node;
-  //       currentToolTip.appendChild(seekBarEl);
-  //     },
-  //     {
-  //       once: true,
-  //     }
-  //   );
+    //handle the actual hovering to update the chapter spot
+    // This section adds an indicator of the chapters markers on hover
+    const seekBar = vPlayer.ref.controlBar.progressControl.seekBar;
+    const handleProgressHover = debounce(handleProgressBarHover, 10);
+    seekBar.on("mouseover", handleProgressHover);
+    seekBar.el().addEventListener(
+      "mouseover",
+      () => {
+        const currentToolTip = document.querySelector(
+          ".vjs-progress-control .vjs-mouse-display"
+        ) as Element;
+        const seekBarEl = (
+          <SeekBarChapterText text={currentChapLabel} />
+        ) as Node;
+        currentToolTip.appendChild(seekBarEl);
+      },
+      {
+        once: true,
+      }
+    );
 
-  //   // Make forward/backward button work again since the chapters and book nav aren't full page reloads
-  //   window.addEventListener("popstate", () => handlePopState());
+    // Make forward/backward button work again since the chapters and book nav aren't full page reloads
+    window.addEventListener("popstate", () => handlePopState());
 
-  //   // For traditional mice, this manages buttons to handle left/right for when chapters buttons don't all fit on one page.
-  //   createResizeObserver(chaptersContainerRef, (refRect) => {
-  //     manageShowingChapterArrows(refRect, setShowChapSliderButtons);
-  //   });
-  // });
+    // For traditional mice, this manages buttons to handle left/right for when chapters buttons don't all fit on one page.
+    createResizeObserver(chaptersContainerRef, (refRect) => {
+      manageShowingChapterArrows(refRect, setShowChapSliderButtons);
+    });
+  });
   //=============== state setters / derived  =============
   return (
     <div class={`overflow-x-hidden ${CONTAINER} w-full sm:(rounded-lg)`}>

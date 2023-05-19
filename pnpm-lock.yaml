@@ -4,7 +4,6 @@ specifiers:
   '@astrojs/cloudflare': ^6.2.2
   '@astrojs/solid-js': 2.1.0
   '@brightcove/player-loader': ^1.8.0
-  '@cloudflare/pages-plugin-mailchannels': ^0.1.2
   '@cloudflare/workers-types': ^4.20230404.0
   '@kobalte/core': ^0.8.2
   '@solid-primitives/i18n': ^1.2.4
@@ -36,7 +35,6 @@ dependencies:
   '@astrojs/cloudflare': 6.2.4_astro@2.4.5
   '@astrojs/solid-js': 2.1.0_xu2sxqsyqad5uxevtt5rhvaovu
   '@brightcove/player-loader': 1.8.0
-  '@cloudflare/pages-plugin-mailchannels': 0.1.2
   '@kobalte/core': 0.8.2_solid-js@1.7.5
   '@solid-primitives/i18n': 1.4.0_solid-js@1.7.5
   '@solid-primitives/resize-observer': 2.0.17_solid-js@1.7.5
@@ -1366,10 +1364,6 @@ packages:
     dependencies:
       mime: 3.0.0
     dev: true
-
-  /@cloudflare/pages-plugin-mailchannels/0.1.2:
-    resolution: {integrity: sha512-xPZNM4NEhFkxnx6JNqoWzk3zgvyoPTFb5KbBz5Z1bc4X/D3gidR776WyUVQzR5OphzTqZfFiC9B8mYUyG0WEVg==}
-    dev: false
 
   /@cloudflare/workers-types/4.20230511.0:
     resolution: {integrity: sha512-Br4i/8+t60HDJIo8o7O9Rrmp03bhdejRW9klb0bK9EfG5Ii7qz5G3PJO12gUz+Vu9m1v9tZ9KOh3Gg8oshXtug==}
