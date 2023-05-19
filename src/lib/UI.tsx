@@ -7,8 +7,8 @@ import type {
   chapterMarkers,
 } from "@customTypes/types";
 import type {Setter} from "solid-js";
-import type {VideoJsPlayer} from "video.js";
-// todo: fix above
+// typings sort of messed in v8 of the lib. uphttps://github.com/videojs/video.js/issues/8109
+import type Player from "video.js/dist/types/player";
 
 import {
   currentBook,
@@ -26,9 +26,9 @@ import {convertTimeToSeconds, formatDuration} from "./utils";
 import {ChapterMarker} from "@components/Player/ChapterMarker";
 import {SW_CACHE_NAME} from "src/constants";
 
-const CONTAINER = "max-w-[1000px] mx-auto";
+export const CONTAINER = "max-w-[1000px] mx-auto";
 // @unocss-include
-const mobileHorizontalPadding = "px-3";
+export const mobileHorizontalPadding = "px-3";
 export const debounce = <T extends unknown[]>(
   callback: (...args: T) => void,
   wait: number
@@ -43,26 +43,7 @@ export const debounce = <T extends unknown[]>(
     }
   };
 };
-// todo: for seeing what videos you have saved
-export async function searchCache(
-  url: string,
-  cacheName?: string
-): Promise<Response | undefined> {
-  if (import.meta.env.SSR) return;
-  if (!("caches" in window)) {
-    return undefined;
-  }
-  // todo: change to mathc, or just open the given cacheName
-  const cache = cacheName
-    ? await caches.open(cacheName)
-    : await caches.open("my-cache");
-  const matchingResponse = await cache.match(url);
-  if (matchingResponse) {
-    return matchingResponse;
-  } else {
-    return undefined;
-  }
-}
+
 export function getJsonFromDocCookie(key?: string): userPreferencesI | null {
   const keyToUse = key || "userPreferences";
   const cookieVal = document.cookie
@@ -104,7 +85,7 @@ export function setCookie(value: string, key?: string): void {
 
 interface playerCustomHotKeysParams {
   e: KeyboardEvent;
-  vjsPlayer: VideoJsPlayer;
+  vjsPlayer: Player;
   increment: number;
   setJumpingBackAmount: Setter<unknown>;
   setJumpingForwardAmount: Setter<unknown>;
@@ -117,7 +98,6 @@ export function playerCustomHotKeys({
   setJumpingForwardAmount,
 }: playerCustomHotKeysParams) {
   const currentTime = vjsPlayer.currentTime();
-  console.log({currentTime});
   let uiJumpingTimeout: number | null = null;
   switch (e.key) {
     case "ArrowLeft":
@@ -233,6 +213,8 @@ export async function fetchRemoteChaptersFile(src: string) {
 function distributeChapterMarkers(markers: chapterMarkers) {
   const plyr = vjsPlayer();
   if (!plyr) return;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore  - controlBar does exist.  Typings are wrong
   const sb = plyr.controlBar?.progressControl?.seekBar?.el();
   markers.forEach((marker) => {
     const chapMarker = <ChapterMarker leftAmt={marker.xPos} />;
@@ -267,7 +249,6 @@ John 2:1-3
 2Pierre2:1-3
 Luc2:17-28
   */
-  // todo: move assigning of dom nodes into separate function so that this is only repsonsible for creating or return the vtt array
   const vttChapsArray = chapterVtt
     .split("\n\n")
     .filter((segment) => segment.includes("-->"))
@@ -471,7 +452,7 @@ export const currentMp4Sources = () => {
   const mp4Srces = currVid.sources?.filter(
     (source) => source.container === "MP4" && source.src?.includes("https")
   );
-  // todo: i think http vs https was the duplicates.  See if this is needed now
+
   const dedupedSizeChecker: number[] = [];
   const dedupedMp4s = mp4Srces.filter((src) => {
     if (!src.size) return false;
@@ -482,9 +463,12 @@ export const currentMp4Sources = () => {
       return true;
     }
   });
+
   dedupedMp4s.forEach((mp4) => {
-    mp4.name = `${currVid.book}-${currVid.chapter}`;
-    mp4.refId = String(currVid.reference_id);
+    setCurrentVid("sources", (srcArr) => srcArr.src === mp4.src, {
+      name: `${currVid.book}-${currVid.chapter}`,
+      refId: String(currVid.reference_id),
+    });
   });
   return dedupedMp4s;
 };
@@ -545,7 +529,8 @@ export function handlePopState() {
 export function handleProgressBarHover(event: Event) {
   const player = vjsPlayer();
   if (!player) return;
-
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore  - controlBar does exist.  Typings are wrong
   const seekBar = player.controlBar?.progressControl?.seekBar;
   const currentToolTip = document.querySelector(
     ".vjs-progress-control .vjs-mouse-display"
@@ -561,16 +546,7 @@ export function handleProgressBarHover(event: Event) {
     setCurrentChapLabel("");
   }
 }
-// todo
-// export function determineShowChapSlider() {
-//   const chapterBtnTrack = document.querySelector(
-//     '[data-js="chapterButtonTrack"]'
-//   ) as HTMLUListElement;
-//   if (!chapterBtnTrack) return;
-//   if (chapterBtnTrack.scrollWidth > refRect.width) {
-//     setShowChapSliderButtons(true);
-//   } else setShowChapSliderButtons(false);
-// }
+
 export function updateHistory(vid: IVidWithCustom, method: "PUSH" | "REPLACE") {
   if (import.meta.env.SSR) return;
 
@@ -617,6 +593,23 @@ export async function getSavedResponseFromCache(
       isSaved: true,
     };
 }
+
+export function manageShowingChapterArrows(
+  refRect: DOMRect | undefined,
+  setterFxn: Setter<boolean>
+) {
+  if (!refRect) return;
+  const chapterBtnTrack = document.querySelector(
+    '[data-js="chapterButtonTrack"]'
+  ) as HTMLUListElement;
+  if (!chapterBtnTrack) return;
+  if (chapterBtnTrack.scrollWidth > refRect.width) {
+    setterFxn(true);
+  } else {
+    setterFxn(false);
+  }
+}
+
 interface IhandleVideoJsTaps {
   el: Element;
   leftDoubleFxn: (number: number) => void;
@@ -652,37 +645,27 @@ export function handleVideoJsTaps({
       tapX = tapEvent.clientX - boundingRect.left;
       const leftThreshold = boundingRect.width * 0.3;
       const rightThreshold = boundingRect.width * 0.7;
-      console.log({tapX, leftThreshold, rightThreshold});
       tapCount += 1;
       if (tapX <= leftThreshold) {
-        // console.log("was a LEFT  TAP");
         tapSide = "LEFT";
       } else if (tapX >= rightThreshold) {
-        // console.log("was a RIGHT  TAP");
         tapSide = "RIGHT";
       }
     }
   }
   function handleTouchEnd(event: TouchEvent) {
     const currentTimestamp = event.timeStamp;
-    console.log({currentTimestamp});
-    console.log({lastTapTimestamp});
-    console.log(`Diff is ${currentTimestamp - lastTapTimestamp}`);
-    console.log({tapCount});
-    // Too short of a single tap on touch end? Clear data
-
     // super fast touches likely doubles.
-    //
     if (
       tapCount === 1 &&
       currentTimestamp - lastTapTimestamp < singleThresholdMilliseconds
     ) {
-      console.log("single tap too brief -- clear");
+      // single tap too brief -- clear"
       clearTapData();
     } else if (tapCount === 1) {
       // exec single tap
       tapTimer = window.setTimeout(() => {
-        console.log("exec single tap then clear");
+        // exec single tap then clear
         singleTapFxn();
         clearTapData();
       }, thresholdMilliseconds);
@@ -690,15 +673,9 @@ export function handleVideoJsTaps({
       window.clearTimeout(tapTimer);
       doubleTapUiClue(tapSide, tapCount);
       tapTimer = window.setTimeout(() => {
-        console.log("executing multi tap");
-        console.log({tapCount});
-        // Determine if the tap occurred within 30% of the left or right edge of the bounding client
-
         if (tapSide === "LEFT") {
-          console.log("LEFT DOUBLE TAP");
           leftDoubleFxn(tapCount);
         } else if (tapSide === "RIGHT") {
-          console.log("RIGHT DOUBLE TAP");
           rightDoubleFxn(tapCount);
         }
         // if Tapcount 0: clear all
@@ -731,18 +708,3 @@ export function handleVideoJsTaps({
   el.addEventListener("touchend", (e) => handleTouchEnd(e as TouchEvent));
   // el.addEventListener("touchcancel", clearTapData);
 }
-
-// Kobalte these components, add in i18n (including to player) see row, make the sw ts, and
-// I need a select dropwdown for mp4 qualitites available for book:
-// Download / Save (checkbox for each)
-// Whole playlist / Whole Book / Current Video (radio)
-// Single = pick your own.   So, select options depend on scope choice
-// Whole book = smallest, or largest
-// --Sizes (with a not about the lower the quality on size)
-// Download (pressable)
-// A callback for each to set the state in a signal which will write to urlFormEncoded to json stringify and hit the SW to be parsed.
-// Prefer using saved video (with tooltip) (which writes to a cookie along with the dark/light toggle which should write to the same cookie)
-// todo: make sure all selction of sources also checks that the source stirng is httpS and not http.
-// todo:
-// Indicator if is saved offline already (icones has a decent icon for this of cloud with checkmark or something)
-export {mobileHorizontalPadding, CONTAINER};

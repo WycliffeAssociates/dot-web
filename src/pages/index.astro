@@ -16,14 +16,12 @@ import { getPlaylistData } from "@lib/routes";
 
 // FIGURE OUT WHICH PLAYLIST TO LOAD BASED ON DOMAIN
 import config from 'src/domainConfig.ts'
-console.log({config})
 let originToMatch = import.meta.env.PROD ? Astro.url.origin : "benin";
-// todo: take out
+// todo: take out on deploy
 if (originToMatch.includes("dot-web.pages.dev")) {
   originToMatch = 'benin'
 }
 let matchingKey = Object.keys(config).find(key => originToMatch.toLowerCase().includes(key.toLowerCase()));
-console.log({matchingKey})
 if (!matchingKey || !config[matchingKey]) return Astro.redirect('404')
 const configObj = config[matchingKey]
 const playlist = configObj.playlist;
@@ -44,9 +42,6 @@ try {
 } catch (error) {
   console.error({error})
 }
-
-// node_modules/video.js/dist/lang/fr.js
-
 
 // DATA FETCHING
 let userPreferences = getUserPreferences(Astro)
@@ -72,17 +67,11 @@ const defaultChap =  defaultBook[0]
 const initialData = {vids: defaultBook, chap: defaultChap, verseRouting:undefined}
 ---
 
-<Layout title="Experiments">
-	<div class="">
-    <Header client:idle prefersDark={userPreferences?.prefersDark} locale={preferredLocale} initialDict={initialDict} />
+<Layout title={`DOT ${playlist}`}>
   <div
     class="grid grid-rows-[auto_auto_1fr] overflow-y-auto"
-  
   >
       <AppWrapper client:load userPreferences={userPreferences} initialData={initialData} playlist={playlist} vids={bucketized} locale={preferredLocale} initialDict={initialDict} videojsInitalDict={videojsInitalDict}/>
  </div> 
-</div> 
+
 </Layout>
-
-
-<!-- <script define:vars={{ myPlayerUrl }} is:inline src={myPlayerUrl}></script> -->

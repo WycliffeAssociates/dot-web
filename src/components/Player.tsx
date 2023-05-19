@@ -18,6 +18,7 @@ import {
   updateHistory,
   handleVideoJsTaps,
   currentMp4Sources,
+  manageShowingChapterArrows,
 } from "@lib/UI";
 import {
   currentVid,
@@ -47,12 +48,8 @@ import {useI18n} from "@solid-primitives/i18n";
 import {DOWNLOAD_SERVICE_WORK_URL, getCfBcIds} from "@lib/routes";
 import {throttle} from "@solid-primitives/scheduled";
 import {createResizeObserver} from "@solid-primitives/resize-observer";
-
 import {normalizeBookName, formatPlayListName} from "@utils";
 
-// first poster with button that looks like play button
-// vid data not loaded until a chapter is picked
-// chapter picked => instantiate module
 interface IVidPlayerProps {
   vids: Record<string | number | symbol, IVidWithCustom[]>;
   playlist: string | undefined;
@@ -73,7 +70,6 @@ export function VidPlayer(props: IVidPlayerProps) {
   setPlayerSpeed(props.userPreferences?.playbackSpeed || "1");
   // eslint-disable-next-line solid/reactivity
   setCurrentPlaylist(props.vids);
-
   const [t] = useI18n();
   const [showChapSliderButtons, setShowChapSliderButtons] = createSignal(true);
   const [jumpingForwardAmount, setJumpingForwardAmount] = createSignal();
@@ -84,13 +80,16 @@ export function VidPlayer(props: IVidPlayerProps) {
   let playerRefContainer: HTMLDivElement | undefined;
   let formDataRef: HTMLFormElement | undefined;
   let chaptersContainerRef: HTMLDivElement | undefined;
+  let chapterBtnTrackRef: HTMLUListElement | undefined;
   const formName = "downloadData";
 
-  //=============== state setters / derived  =============
-
+  //=============== OnMount augments video player  =============
+  // This uses the https://github.com/brightcove/player-loader package instead of bare video js for two reasons; One is convenience, but the other is that the analytics for the playlists and player is already set versus having to wire up all the analytics.  It also leaves some of the control that is exposed in the BC Player UI since it's basically configuring the script in BC.  This must be run on mount with a dynamic import since the brightcove player loader uses the window global, which of course, doesn't run in SSR.  Since most of the functionality on the page is related to the player, there is pretty much 0 interactivity until the player loads.
   onMount(async () => {
     const curVid = currentVid;
+    // mostly to satisfy ts
     if (!curVid) return;
+    // get env vars from bc.
     const creds = await getCfBcIds(window.location.origin);
     if (!creds) {
       return (window.location.href = `${window.location.origin}/404`);
@@ -108,15 +107,11 @@ export function VidPlayer(props: IVidPlayerProps) {
     };
 
     const vPlayer = await playerModule.default(options);
-    // if (props.videojsInitalDict && window.videojs) {
-    //   console.log("adding lang from initial dict");
-    //   window.videojs.addLanguage(navigator.language, props.videojsInitalDict);
-    // }
-    // set state for later
     setVjsPlayer(vPlayer.ref);
-    console.log({vPlayer});
-    //  inline
+
+    //  inline prevents auto full screen for mobile
     vPlayer.ref.playsinline(true);
+    // Set to the langauge passed from the request header. Unfortunately at time of authoring, neither dictionary for videojs seems complete, so if we have an initial complete, so we import the json and merge in everything for a maximal dict if we have it, otherwise just use what comes on the player from BC.
     if (props.videojsInitalDict) {
       const currentDictVidJs = vPlayer.ref.languages_[navigator.language];
       const completeDict = {
@@ -127,13 +122,7 @@ export function VidPlayer(props: IVidPlayerProps) {
     }
     vPlayer.ref.language(navigator.language);
 
-    window.setTimeout(() => {
-      console.log("running that timeout");
-      vPlayer.ref.controlBar.playToggle.controlText_ = "Test me!";
-    }, 1000 * 8);
-
-    // update url
-    // todo: buggy
+    // Incrementally update the URL to the current book/chapter/verse
     const throttleProgressUpdates = throttle(() => {
       const curVid = currentVid;
       const currentTime = vjsPlayer()?.currentTime();
@@ -162,34 +151,35 @@ export function VidPlayer(props: IVidPlayerProps) {
       const currentTime = vjsPlayer()?.currentTime();
       currentTime && setVidProgress(currentTime);
     });
-    console.log(vPlayer.ref);
+
+    // Handle taps on mobile for play/pause/fast forward
     const videoJsDomEl = vPlayer.ref.el();
     handleVideoJsTaps({
       el: videoJsDomEl,
       rightDoubleFxn(number) {
         const curTime = vjsPlayer()?.currentTime();
+        if (!curTime) return;
         // the extra minus jumpAmount is to account for fact that min tap amoutn is 2 to diff btw double and single taps, so we still want to allow the smallest measure of jump back;
         const newTime = number * jumpAmount + curTime - jumpAmount;
-        console.log({newTime});
         vjsPlayer()?.currentTime(newTime);
         setJumpingForwardAmount(null);
         videoJsDomEl.classList.remove("vjs-user-active");
       },
       leftDoubleFxn(number) {
         const curTime = vjsPlayer()?.currentTime();
+        if (!curTime) return;
+
         const newTime = curTime - number * jumpAmount - jumpAmount;
-        console.log({newTime});
         vjsPlayer()?.currentTime(newTime);
         setJumpingBackAmount(null);
         videoJsDomEl.classList.remove("vjs-user-active");
       },
       singleTapFxn() {
         const plyr = vjsPlayer();
+        if (!plyr) return;
         if (plyr.paused()) {
-          console.log("playing");
           plyr.play();
         } else {
-          console.log("pausing");
           plyr.pause();
         }
       },
@@ -203,55 +193,8 @@ export function VidPlayer(props: IVidPlayerProps) {
         }
       },
     });
-    console.log({el: videoJsDomEl});
-    // vPlayer.ref.mobileUi({
-    //   fullscreen: {
-    //     enterOnRotate: true,
-    //     exitOnRotate: true,
-    //     lockOnRotate: true,
-    //     lockToLandscapeOnEnter: false,
-    //     iOS: false,
-    //     disabled: false,
-    //   },
-    //   touchControls: {
-    //     seekSeconds: 10,
-    //     tapTimeout: 300,
-    //     disableOnEnd: false,
-    //     disabled: false,
-    //   },
-    // });
-    // vjsPlayer().on("touchstart", (e) => {
-    //   // e.stopPropagation();
-    //   const plyr = vjsPlayer();
-    //   console.log({e});
-    //   console.log(e.touches.length);
-    //   console.log(plyr.paused());
-    //   if (e.touches.length === 1) {
-    //     tapTimeoutId = window.setTimeout(() => {
-    //       if (plyr.paused()) {
-    //         console.log("playing");
-    //         plyr.play();
-    //       } else {
-    //         console.log("pausing");
-    //         plyr.pause();
-    //       }
-    //     }, 50);
-    //   }
-    // });
 
-    // vPlayer.ref.on("touchend", (e) => {
-    //   // console.log("touch end!");
-    //   if (tapTimeoutId) {
-    //     window.clearTimeout(tapTimeoutId);
-    //   }
-    // });
-    // vPlayer.ref.on("touchcancel", (e) => {
-    //   // console.log("touchcancel");
-    //   if (tapTimeoutId) {
-    //     window.clearTimeout(tapTimeoutId);
-    //   }
-    // });
-
+    // On desktop, handle hotkeys for seek forward and backward
     vPlayer.ref.on("keydown", (e: KeyboardEvent) =>
       playerCustomHotKeys({
         e,
@@ -261,12 +204,13 @@ export function VidPlayer(props: IVidPlayerProps) {
         setJumpingForwardAmount,
       })
     );
-    // get chapters for first video if exist
 
-    // setup. The reactivity in this case is teh props, adn the props aren't going to change without routing to anotehr page.
+    // setup. The reactivity in this case is the props, adn the props aren't going to change without routing to anotehr page.
     // eslint-disable-next-line solid/reactivity
     vPlayer.ref.one("loadedmetadata", async () => {
+      // chapters not in the sense of book/chapter but in the sense of cue points in the video that mark verses
       handleChapters(curVid);
+      // If we have a verse in Url (e.g.) Mrk.01.002, jump straight to that segment
       if (props.initialData.verseRouting) {
         const applicableChapter = await handleVerseProvidedInRouting(
           curVid,
@@ -277,22 +221,15 @@ export function VidPlayer(props: IVidPlayerProps) {
         }
       }
 
-      // Adjust speed if present in cookie
+      // Adjust speed if present in user preference cookie (just in case someone consistently wants to watch things fast)
       if (props.userPreferences?.playbackSpeed) {
         vjsPlayer()?.playbackRate(Number(props.userPreferences?.playbackSpeed));
       }
     });
-    // vPlayer.ref.on("play", () => {
-    //   try {
-    //     vPlayer.ref.enterFullWindow();
-    //   } catch (error) {
-    //     console.error({error});
-    //   }
-    // });
-    // Add in Chapters text to the tool tip that shows up when you hover
-    const seekBar = vPlayer.ref.controlBar.progressControl.seekBar;
 
     //handle the actual hovering to update the chapter spot
+    // This section adds an indicator of the chapters markers on hover
+    const seekBar = vPlayer.ref.controlBar.progressControl.seekBar;
     const handleProgressHover = debounce(handleProgressBarHover, 10);
     seekBar.on("mouseover", handleProgressHover);
     seekBar.el().addEventListener(
@@ -311,21 +248,15 @@ export function VidPlayer(props: IVidPlayerProps) {
       }
     );
 
+    // Make forward/backward button work again since the chapters and book nav aren't full page reloads
     window.addEventListener("popstate", () => handlePopState());
 
-    createResizeObserver(chaptersContainerRef, (refRect, refNode) => {
-      const chapterBtnTrack = document.querySelector(
-        '[data-js="chapterButtonTrack"]'
-      ) as HTMLUListElement;
-      if (!chapterBtnTrack) return;
-      if (chapterBtnTrack.scrollWidth > refRect.width) {
-        setShowChapSliderButtons(true);
-      } else setShowChapSliderButtons(false);
+    // For traditional mice, this manages buttons to handle left/right for when chapters buttons don't all fit on one page.
+    createResizeObserver(chaptersContainerRef, (refRect) => {
+      manageShowingChapterArrows(refRect, setShowChapSliderButtons);
     });
   });
   //=============== state setters / derived  =============
-
-  // return <p>Still fast here? x? y? z? a? b? c? d? e? f?</p>;
   return (
     <div class={`overflow-x-hidden ${CONTAINER} w-full sm:(rounded-lg)`}>
       <div
@@ -337,7 +268,7 @@ export function VidPlayer(props: IVidPlayerProps) {
         <button
           data-title="chapNext"
           class={`text-surface w-12 h-12 md:w-20 md:h-20 bg-gray-200/40 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute left-4 top-1/2 -translate-y-1/2 z-30 ${
-            !trackAdjacentChap(true).prev && "hidden"
+            !trackAdjacentChap().prev && "hidden"
           }`}
           onClick={() => {
             getAdjacentChap("PREV");
@@ -373,7 +304,7 @@ export function VidPlayer(props: IVidPlayerProps) {
         <button
           data-title="chapBack"
           class={`text-surface w-12 h-12 md:w-20 md:h-20 bg-gray-200/40 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute right-4 top-1/2 -translate-y-1/2 z-30 ${
-            !trackAdjacentChap(true).next && "hidden"
+            !trackAdjacentChap().next && "hidden"
           }`}
           onClick={() => {
             getAdjacentChap("NEXT");
@@ -387,7 +318,6 @@ export function VidPlayer(props: IVidPlayerProps) {
       <div data-title="VideoSupplmental" class="py-2 px-2">
         <div data-title="videoControl" class="flex gap-2">
           {/* Chapter Forward */}
-
           <span class="inline-flex gap-1 items-center">
             <input
               type="range"
@@ -434,7 +364,7 @@ export function VidPlayer(props: IVidPlayerProps) {
         <div class="flex">
           <Show when={showChapSliderButtons()}>
             <button
-              class="pr-6 text-2xl"
+              class="pr-3 text-2xl"
               onClick={() => {
                 const chapterBtnTrack = document.querySelector(
                   '[data-js="chapterButtonTrack"]'
@@ -454,9 +384,7 @@ export function VidPlayer(props: IVidPlayerProps) {
           >
             <ChapterList
               showChapSliderButtons={showChapSliderButtons}
-              formDataRef={formDataRef}
               chapterButtonOnClick={(vid: IVidWithCustom) => {
-                formDataRef && formDataRef.reset();
                 changePlayerSrc(vid);
               }}
               currentVid={currentVid}
@@ -464,7 +392,7 @@ export function VidPlayer(props: IVidPlayerProps) {
           </div>
           <Show when={showChapSliderButtons()}>
             <button
-              class="pl-6 text-2xl"
+              class="pl-3 text-2xl"
               onClick={() => {
                 const chapterBtnTrack = document.querySelector(
                   '[data-js="chapterButtonTrack"]'
@@ -482,7 +410,12 @@ export function VidPlayer(props: IVidPlayerProps) {
           data-title="BookAndPlaylistName"
           class={`${mobileHorizontalPadding} sm:(py-4)`}
         >
-          <h1 class="font-bold"> {normalizeBookName(currentVid?.book)}</h1>
+          <h1 class="font-bold">
+            {" "}
+            {normalizeBookName(
+              currentVid?.localizedBookName || currentVid.book
+            )}
+          </h1>
           <p>{formatPlayListName(props.playlist)}</p>
         </div>
       </div>
@@ -517,9 +450,16 @@ export function VidPlayer(props: IVidPlayerProps) {
                   <li class="text-neutral-100 dark:text-neutral-200 py-1 w-full border-y border-base md:text-lg md:py-2">
                     <button
                       onClick={() => {
-                        formDataRef && formDataRef.reset();
                         setNewBook(book);
                         updateHistory(book[0], "PUSH");
+
+                        // see if need to resize buttons track
+                        const refRect =
+                          chaptersContainerRef?.getBoundingClientRect();
+                        manageShowingChapterArrows(
+                          refRect,
+                          setShowChapSliderButtons
+                        );
                       }}
                       class={`inline-flex gap-2 items-center hover:(text-surface font-bold underline) ${
                         currentVid.custom_fields?.book?.toUpperCase() ===
@@ -531,7 +471,10 @@ export function VidPlayer(props: IVidPlayerProps) {
                       <span class="bg-base text-primary dark:text-primary rounded-full p-4 h-0 w-0 inline-grid place-content-center">
                         {idx() + 1}
                       </span>
-                      {normalizeBookName(key)}
+                      {normalizeBookName(
+                        book.find((b) => !!b.localizedBookName)
+                          ?.localizedBookName || key
+                      )}
                     </button>
                   </li>
                 );

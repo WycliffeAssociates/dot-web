@@ -7,11 +7,13 @@ export interface IVidWithCustom extends Video {
   originalIdx?: number | null;
   slugName?: string | null;
   chapter?: string | null;
+  localizedBookName: string | undefined;
   custom_fields: Video["custom_fields"] & {
     book?: string;
     chapter?: string;
     country?: string;
     language?: string;
+    localized_book_name?: string;
   };
   sources: customVideoSources[];
   chapterMarkers: chapterMarkers;

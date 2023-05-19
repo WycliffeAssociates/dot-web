@@ -21,7 +21,6 @@ export async function getCfBcIds(origin: string) {
     const urlBase = import.meta.env.PROD ? origin : "http://127.0.0.1:8788";
     const urlToFetch = `${urlBase}/api/getId`;
     const response = await fetch(urlToFetch);
-    // console.log({response});
     if (response.ok) {
       const data = (await response.json()) as {
         accountId: string;

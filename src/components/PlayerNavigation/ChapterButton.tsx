@@ -3,7 +3,6 @@ import {updateHistory} from "@lib/UI";
 
 interface IChapterButton {
   onClick: (vid: IVidWithCustom) => void;
-  formDataRef: HTMLFormElement | undefined;
   vid: IVidWithCustom;
   currentVid: IVidWithCustom;
 }
@@ -11,10 +10,6 @@ export function ChapterButton(props: IChapterButton) {
   return (
     <button
       onClick={() => {
-        const downloadDataForm = document.querySelector(
-          "#downloadDataForm"
-        ) as HTMLFormElement;
-        downloadDataForm && downloadDataForm.reset();
         props.onClick(props.vid);
         updateHistory(props.vid, "PUSH");
       }}

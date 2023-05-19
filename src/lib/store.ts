@@ -1,8 +1,7 @@
 import {createSignal} from "solid-js";
 import {createStore} from "solid-js/store";
-// import type {VideoJsPlayer} from "@types/video.js";
 import type {IDownloadPreferences, IVidWithCustom} from "@customTypes/types";
-// import type {VideoJsPlayer} from "video.js";
+import type Player from "video.js/dist/types/player";
 
 const [downloadPreference, setDownloadPreference] =
   createSignal<IDownloadPreferences>({
@@ -21,7 +20,8 @@ const [currentPlaylist, setCurrentPlaylist] =
 const [vidProgress, setVidProgress] = createSignal(0);
 const [currentBook, setCurrentBook] = createSignal<IVidWithCustom[]>();
 const [currentChapLabel, setCurrentChapLabel] = createSignal("");
-const [vjsPlayer, setVjsPlayer] = createSignal<VideoJsPlayer>();
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const [vjsPlayer, setVjsPlayer] = createSignal<Player>();
 const [showDownloadMenu, setShowDownloadMenu] = createSignal(false);
 const [playerSpeed, setPlayerSpeed] = createSignal<string>();
 

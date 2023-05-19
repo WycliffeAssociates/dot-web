@@ -4,7 +4,6 @@ import {ChapterButton} from "./ChapterButton";
 import {currentBook} from "@lib/store";
 
 interface IChapterList {
-  formDataRef: HTMLFormElement | undefined;
   chapterButtonOnClick: (arg: IVidWithCustom) => void;
   currentVid: IVidWithCustom;
   showChapSliderButtons: Accessor<boolean>;
@@ -25,7 +24,6 @@ export function ChapterList(props: IChapterList) {
                 <ChapterButton
                   currentVid={props.currentVid}
                   vid={vid}
-                  formDataRef={props.formDataRef}
                   onClick={(vid) => props.chapterButtonOnClick(vid)}
                 />
               </li>

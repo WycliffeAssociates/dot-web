@@ -6,16 +6,7 @@ interface IHiddenForm {
 }
 export function HiddenForm(props: IHiddenForm) {
   return (
-    <form
-      action={DOWNLOAD_SERVICE_WORK_URL}
-      method="post"
-      name={props.name}
-      onSubmit={() => {
-        // todo: set timeout on if only saved to Service worker to check for creation.
-        // check then poll to see if the current video is saved in the service worker.
-        return true;
-      }}
-    >
+    <form action={DOWNLOAD_SERVICE_WORK_URL} method="post" name={props.name}>
       <input
         type="hidden"
         name="swPayload"

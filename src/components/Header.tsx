@@ -19,6 +19,7 @@ import {useI18n} from "@solid-primitives/i18n";
 
 type HeaderProps = {
   prefersDark?: boolean | undefined;
+  initialPath: string;
 };
 interface I18nWrapper extends ParentProps {
   locale: string;
@@ -97,7 +98,7 @@ function HeaderInner(props: HeaderProps) {
       </header>
       <div class="relative overflow-hidden w-full">
         <div
-          class={`bg-[#e8e8e8] absolute right-0 top-0 transform transition-250 translate-x-full p-4 h-full fixed rounded-md dark:bg-[#181817] ${
+          class={`min-w-[200px] z-40 bg-[#e8e8e8] absolute right-0 top-0 transform transition-250 translate-x-full p-4 h-full fixed rounded-md dark:bg-[#181817] ${
             menuIsOpen() ? "translate-x-0" : ""
           }`}
         >
@@ -107,11 +108,16 @@ function HeaderInner(props: HeaderProps) {
           >
             <IconMajesticonsCloseLine />{" "}
           </button>
+          <Show when={props.initialPath != "/"}>
+            <a class="block hover:(text-primary underline)" href="/">
+              {t("homePage", undefined, "Home")}
+            </a>
+          </Show>
           <a class="block hover:(text-primary underline)" href="/license">
             {t("license", undefined, "License")}
           </a>
-          <a class="block hover:(text-primary underline)" href="/contact">
-            {t("contactUs", undefined, "Contact Us")}
+          <a class="block hover:(text-primary underline)" href="/about">
+            {t("about", undefined, "About")}
           </a>
         </div>
       </div>

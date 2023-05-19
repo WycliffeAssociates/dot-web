@@ -43,7 +43,8 @@ export function normalizeBookName(bookname: string | undefined) {
   } else return upperFirstLowerRest(bookname);
 }
 export function upperFirstLowerRest(bookName: string) {
-  return `${bookName.slice(0, 1).toUpperCase()}${bookName
+  return `${bookName.trim().slice(0, 1).toUpperCase()}${bookName
+    .trim()
     .slice(1)
     .toLowerCase()}`;
 }
@@ -161,6 +162,10 @@ export function mutateSortVidsArray(vids: IVidWithCustom[]) {
     vid.slugName = convertToValidFilename(String(vid.name));
     vid.book = vid.custom_fields?.book?.toUpperCase();
     vid.chapter = vid.custom_fields?.chapter;
+    vid.localizedBookName =
+      vid.custom_fields?.localized_book_name ||
+      vid.custom_fields?.book?.toUpperCase();
+    // vid.localizedBookName = vid.custom_fields?.lo
   });
   return {sortedVids, filteredByMatchingReferenceId};
 }
