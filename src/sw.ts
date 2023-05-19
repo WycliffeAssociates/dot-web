@@ -108,7 +108,7 @@ self.addEventListener("fetch", async (event) => {
         return new Response(readable, {
           headers: {
             "Content-Type": "application/octet-stream; charset=utf-8",
-            "Content-Disposition": `attachment; filename=${fileName}.zip`,
+            "Content-Disposition": `attachment; filename=${fileName}.mp3`,
             "Content-Length": String(totalSize),
           },
         });
