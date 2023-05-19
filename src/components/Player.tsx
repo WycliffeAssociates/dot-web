@@ -265,7 +265,10 @@ export function VidPlayer(props: IVidPlayerProps) {
       >
         <h1 class="font-bold">
           {" "}
-          {normalizeBookName(currentVid?.localizedBookName || currentVid.book)}
+          {normalizeBookName(
+            props.initialData.chap?.localizedBookName ||
+              props.initialData.chap.book
+          )}
         </h1>
         <p>{formatPlayListName(props.playlist)}</p>
       </div>
@@ -275,20 +278,9 @@ export function VidPlayer(props: IVidPlayerProps) {
             return (
               <li class="text-neutral-100 dark:text-neutral-200 py-1 w-full border-y border-base md:text-lg md:py-2">
                 <button
-                  onClick={() => {
-                    setNewBook(book);
-                    updateHistory(book[0], "PUSH");
-
-                    // see if need to resize buttons track
-                    const refRect =
-                      chaptersContainerRef?.getBoundingClientRect();
-                    manageShowingChapterArrows(
-                      refRect,
-                      setShowChapSliderButtons
-                    );
-                  }}
+                  onClick={}
                   class={`inline-flex gap-2 items-center hover:(text-surface font-bold underline) ${
-                    currentVid.custom_fields?.book?.toUpperCase() ===
+                    props.initialData.chap.custom_fields?.book?.toUpperCase() ===
                     key.toUpperCase()
                       ? "underline font-bold"
                       : ""
