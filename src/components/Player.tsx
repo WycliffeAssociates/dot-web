@@ -337,7 +337,7 @@ export function VidPlayer(props: IVidPlayerProps) {
             <span class="inline-block ml-2">{playerSpeed()}</span>
           </span>
           {/* Speed Preference */}
-          {/* <div data-title="downloadCurrentVid" class="relative ml-auto">
+          <div data-title="downloadCurrentVid" class="relative ml-auto">
             <form
               action={DOWNLOAD_SERVICE_WORK_URL}
               method="post"
@@ -357,7 +357,7 @@ export function VidPlayer(props: IVidPlayerProps) {
                 <IconDownload classNames="hover:text-primary" />
               </button>
             </form>
-          </div> */}
+          </div>
         </div>
         <div class="flex">
           <Show when={showChapSliderButtons()}>
