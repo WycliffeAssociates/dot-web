@@ -681,7 +681,6 @@ export function handleVideoJsTaps({
         // if Tapcount 0: clear all
         // if 1: exec single tap
         // if 2: exec double tap
-        console.log(`clearing multi tap after ${thresholdMilliseconds}`);
         clearTapData();
       }, thresholdMilliseconds);
     }

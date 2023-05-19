@@ -21,7 +21,6 @@ interface IAppWrapperProps {
   videojsInitalDict: Record<string, string> | undefined;
 }
 export function AppWrapper(props: IAppWrapperProps) {
-  console.log({props});
   return (
     <I18nProvider locale={props.locale} initialDict={props.initialDict}>
       <VidPlayer

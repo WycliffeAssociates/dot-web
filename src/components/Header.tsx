@@ -81,15 +81,20 @@ function HeaderInner(props: HeaderProps) {
             class="toggle-button"
             aria-label="Light Mode or Dark Mode"
             isPressed={prefersDark()}
-            onPressedChange={(isPressed) => handleThemeToggle(isPressed)}
+            onChange={(isPressed) =>
+              handleThemeToggle(isPressed as unknown as boolean)
+            }
+            // onPressedChange={handleThemeToggle}
           >
             <Show when={prefersDark()} fallback={<IconMoon />}>
               <IconSun />
             </Show>
           </ToggleButton.Root>
+          {/* <button onClick={() => setMenuIsOpen(!menuIsOpen())}>
+          </button> */}
           <ToggleButton.Root
             isPressed={menuIsOpen()}
-            onPressedChange={(isPressed) => setMenuIsOpen(isPressed)}
+            onChange={() => setMenuIsOpen(!menuIsOpen())}
           >
             <IconMenu classNames="w-8" />
           </ToggleButton.Root>
@@ -103,20 +108,29 @@ function HeaderInner(props: HeaderProps) {
           }`}
         >
           <button
-            class="block ml-auto text-xl hover:(text-primary) focus:(text-primary) active:(scale-98)"
+            class="block ml-auto text-4xl hover:(text-primary) focus:(text-primary) transform active:(scale-95)"
             onClick={() => setMenuIsOpen(!menuIsOpen())}
           >
             <IconMajesticonsCloseLine />
           </button>
           <Show when={props.initialPath != "/"}>
-            <a class="block hover:(text-primary underline)" href="/">
+            <a
+              class="block mt-2 mb-2 text-lg hover:(text-primary underline)"
+              href="/"
+            >
               {t("homePage", undefined, "Home")}
             </a>
           </Show>
-          <a class="block hover:(text-primary underline)" href="/license">
+          <a
+            class="block mb-2 text-lg hover:(text-primary underline)"
+            href="/license"
+          >
             {t("license", undefined, "License")}
           </a>
-          <a class="block hover:(text-primary underline)" href="/about">
+          <a
+            class="block mb-2 text-lg hover:(text-primary underline)"
+            href="/about"
+          >
             {t("about", undefined, "About")}
           </a>
         </div>

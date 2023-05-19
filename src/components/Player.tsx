@@ -62,7 +62,6 @@ interface IVidPlayerProps {
   userPreferences: userPreferencesI | undefined;
 }
 export function VidPlayer(props: IVidPlayerProps) {
-  console.log({props});
   // I'm using the store.ts file as a way to pass around state without context.  (e.g. singletons). These setX calls at the top here run on the server once (since calling setX on any store on server is not the same value the client receives during hydration.)
   setCurrentVid(props.initialData.chap);
   setCurrentBook(props.initialData.vids);
@@ -71,7 +70,7 @@ export function VidPlayer(props: IVidPlayerProps) {
   setPlayerSpeed(props.userPreferences?.playbackSpeed || "1");
   // eslint-disable-next-line solid/reactivity
   setCurrentPlaylist(props.vids);
-  // const [t] = useI18n();
+  const [t] = useI18n();
   const [showChapSliderButtons, setShowChapSliderButtons] = createSignal(true);
   const [jumpingForwardAmount, setJumpingForwardAmount] = createSignal();
   const [jumpingBackAmount, setJumpingBackAmount] = createSignal();
@@ -423,14 +422,14 @@ export function VidPlayer(props: IVidPlayerProps) {
         class={`${mobileHorizontalPadding} py-2 bg-primary dark:bg-surface/05 text-base rounded-tr-xl rounded-tl-xl  scrollbar-hide min-h-200px`}
       >
         <h2 class="text-white dark:text-neutral-200 font-bold">
-          {/* {t("bibleSelection", undefined, "Bible Selection")} */}
+          {t("bibleSelection", undefined, "Bible Selection")}
         </h2>
         <p class="text-white dark:text-neutral-200">
-          {/* {t(
+          {t(
             "chooseABook",
             undefined,
             "Choose a book of the bible to watch here."
-          )} */}
+          )}
         </p>
         <div class="relative h-full sm:h-auto ">
           <div
