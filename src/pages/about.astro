@@ -1,10 +1,46 @@
 ---
 import Layout from "@layouts/Layout.astro";
 // const origin = Astro.url.origin
+import config from 'src/domainConfig.ts'
+import defaultImg from "/images/Benin-example.jpg"
+import {
+getPreferredLangFromHeader,
+} from "@utils";
+
+let originToMatch = import.meta.env.PROD ? Astro.url.origin : "benin";
+if (originToMatch.includes("dot-web.pages.dev")) {
+  originToMatch = 'benin'
+}
+const configKey = Object.keys(config).find(key => originToMatch.toLowerCase().includes(key.toLowerCase()))
+if (!configKey) return Astro.redirect('404')
+const configEntry = config[configKey]
+const aboutImg = await import(`/images/${configEntry.aboutImg}`) ; 
+const imgSrc = aboutImg ? aboutImg.default : defaultImg
+const preferredLocale = getPreferredLangFromHeader(Astro.request);
+let aboutHtml = preferredLocale == "fr" ? `En savoir plus sur le Bénin` : `Learn more about Benin`; 
+let aboutH1 = preferredLocale == "fr" ? "La traduction des sourds au Bénin" : "Deaf owned translation for Benin"
 ---
 <Layout title="contact"> 
-	<div class="max-w-prose mx-auto p-4  text-xl leading-loose">
-		<h1 class="text-4xl mb-3" >About</h1>
-		<p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Eligendi ab quas dolores, libero sit sapiente aliquid molestias nisi, eveniet impedit natus cupiditate mollitia! Voluptatibus ratione expedita, maiores et, optio quas sapiente ducimus odio dolores consectetur, quae placeat odit? Fugit unde nostrum illo veritatis cupiditate nihil, sint quam dolor. Rerum, explicabo? Contact us at <a href="mailto:nowhere@wa.org" class="text-primary underline">CONTACT_EMAIL</a></p>
+	<div class="">
+		<div class={`relative min-h-50vh border-red-400 bg-cover bg-center bg-black/40`} style={`background-image: linear-gradient(
+			rgba(0, 0, 0, 0.45), 
+			rgba(0, 0, 0, 0.45)
+		), url(${imgSrc})`}  >
+			<!-- <img src={imgSrc} class="" alt="About Dot"> -->
+			<div class="text-white absolute bottom-8 text-center left-1/2 -translate-x-1/2 w-full">
+			<p>{aboutHtml}</p>
+			<h1>{aboutH1}</h1>
+			</div>
+		</div>
+		<div class="max-w-prose mx-auto p-4 m-8  text-xl leading-loose">
+			<h1 class="text-4xl mb-3 font-bold" >About</h1>
+			<p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Eligendi ab quas dolores, libero sit sapiente aliquid molestias nisi, eveniet impedit natus cupiditate mollitia! Voluptatibus ratione expedita, maiores et, optio quas sapiente ducimus odio dolores consectetur, quae placeat odit? Fugit unde nostrum illo veritatis cupiditate nihil, sint quam dolor. Rerum, explicabo? Contact us at <a href="mailto:nowhere@wa.org" class="text-primary underline">CONTACT_EMAIL</a></p>
+		</div>
 	</div>
 </Layout>
+
+<style>
+	 h1 {
+		font-size: 2rem !important
+	}
+</style>

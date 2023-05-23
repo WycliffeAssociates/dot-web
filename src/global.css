@@ -114,7 +114,9 @@
 .vjs-progress-control:focus .chapLabelTextHolder {
   display: inline-block;
 }
-
+.vjs-chapters-button {
+  display: none !important;
+}
 /* =============== MISC  ============= */
 /* gradients some things just are simpler outside of utility css, but it's nice to still have easy media queries that line up with uno breakpoitns */
 .y-scroll-gradient {

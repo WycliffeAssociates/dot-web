@@ -1,7 +1,7 @@
 export const lang = {
   about: "About",
   bibleSelection: "Bible Selection",
-  chooseABook: "Choose a book of the bible to watch here.",
+  chooseABook: "Choose a book of the Bible to watch here.",
   homePage: "Home",
   license: "License",
 };

@@ -101,9 +101,15 @@ function HeaderInner(props: HeaderProps) {
         </div>
         {/* </span> */}
       </header>
+      <Show when={menuIsOpen()}>
+        <div
+          class="fixed inset-0 bg-black/30 dark:bg-black/50 z-30"
+          onClick={() => setMenuIsOpen(false)}
+        />
+      </Show>
       <div class="relative overflow-hidden w-full">
         <div
-          class={`min-w-[200px] z-40 bg-[#e8e8e8] absolute right-0 top-0 transform transition-250 translate-x-full p-4 h-full fixed rounded-md dark:bg-[#181817] ${
+          class={`w-full max-w-md  z-40 bg-white absolute right-0 top-0 transform transition-250 translate-x-full p-4 h-full fixed rounded-md dark:bg-[#181817] ${
             menuIsOpen() ? "translate-x-0" : ""
           }`}
         >
@@ -113,26 +119,28 @@ function HeaderInner(props: HeaderProps) {
           >
             <IconMajesticonsCloseLine />
           </button>
-          <Show when={props.initialPath != "/"}>
+          <div class="flex flex-col divide-y border-gray-600 dark:border-gray-300 mt-12">
+            <Show when={props.initialPath != "/"}>
+              <a
+                class="block py-3  text-lg hover:(text-primary underline)"
+                href="/"
+              >
+                {t("homePage", undefined, "Home")}
+              </a>
+            </Show>
             <a
-              class="block mt-2 mb-2 text-lg hover:(text-primary underline)"
-              href="/"
+              class="block  py-3 text-lg hover:(text-primary underline)"
+              href="/license"
             >
-              {t("homePage", undefined, "Home")}
+              {t("license", undefined, "License")}
             </a>
-          </Show>
-          <a
-            class="block mb-2 text-lg hover:(text-primary underline)"
-            href="/license"
-          >
-            {t("license", undefined, "License")}
-          </a>
-          <a
-            class="block mb-2 text-lg hover:(text-primary underline)"
-            href="/about"
-          >
-            {t("about", undefined, "About")}
-          </a>
+            <a
+              class="block  py-3 text-lg hover:(text-primary underline)"
+              href="/about"
+            >
+              {t("about", undefined, "About")}
+            </a>
+          </div>
         </div>
       </div>
     </div>
