@@ -2,7 +2,7 @@
 import Layout from "@layouts/Layout.astro";
 // const origin = Astro.url.origin
 import config from 'src/domainConfig.ts'
-import defaultImg from "src/images/benin-example.jpg"
+const defaultImg = "src/images/benin-example.jpg"
 import {
 getPreferredLangFromHeader,
 } from "@utils";
@@ -22,10 +22,10 @@ let aboutH1 = preferredLocale == "fr" ? "La traduction des sourds au Bénin" : "
 ---
 <Layout title="contact"> 
 	<div class="">
-		<div class={`relative min-h-50vh border-red-400 bg-cover bg-center bg-black/40`} style={`background-image: linear-gradient(
+		<div class={`relative min-h-60vh border-red-400 bg-cover bg-center bg-black/40`} style={`background-image: linear-gradient(
 			rgba(0, 0, 0, 0.45), 
 			rgba(0, 0, 0, 0.45)
-		), url(${imgSrc})`}  >
+		), url(${defaultImg})`}  >
 			<!-- <img src={imgSrc} class="" alt="About Dot"> -->
 			<div class="text-white absolute bottom-8 text-center left-1/2 -translate-x-1/2 w-full">
 			<p>{aboutHtml}</p>
