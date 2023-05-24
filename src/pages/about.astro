@@ -2,7 +2,7 @@
 import Layout from "@layouts/Layout.astro";
 // const origin = Astro.url.origin
 import config from 'src/domainConfig.ts'
-import defaultImg from "../images/Benin-example.jpg"
+import defaultImg from "../images/benin-example.jpg"
 import {
 getPreferredLangFromHeader,
 } from "@utils";
@@ -14,7 +14,7 @@ if (originToMatch.includes("dot-web.pages.dev")) {
 const configKey = Object.keys(config).find(key => originToMatch.toLowerCase().includes(key.toLowerCase()))
 if (!configKey) return Astro.redirect('404')
 const configEntry = config[configKey]
-const aboutImg = await import(`../images/${configEntry.aboutImg}`) ; 
+const aboutImg = await import(`../images/${configEntry.aboutImg}.jpg`) ; 
 const imgSrc = aboutImg ? aboutImg.default : defaultImg
 const preferredLocale = getPreferredLangFromHeader(Astro.request);
 let aboutHtml = preferredLocale == "fr" ? `En savoir plus sur le Bénin` : `Learn more about Benin`; 
