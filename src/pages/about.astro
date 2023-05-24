@@ -1,12 +1,11 @@
 ---
 import Layout from "@layouts/Layout.astro";
-// const origin = Astro.url.origin
 import config from 'src/domainConfig.ts'
-const defaultImg = "src/images/benin-example.jpg"
 import {
-getPreferredLangFromHeader,
+	getPreferredLangFromHeader,
 } from "@utils";
 
+const defaultImg = "src/images/benin-example.jpg"
 let originToMatch = import.meta.env.PROD ? Astro.url.origin : "benin";
 if (originToMatch.includes("dot-web.pages.dev")) {
   originToMatch = 'benin'
@@ -14,8 +13,12 @@ if (originToMatch.includes("dot-web.pages.dev")) {
 const configKey = Object.keys(config).find(key => originToMatch.toLowerCase().includes(key.toLowerCase()))
 if (!configKey) return Astro.redirect('404')
 const configEntry = config[configKey]
-const aboutImg = await import(`../images/${configEntry.aboutImg}.jpg`) ; 
-const imgSrc = aboutImg ? aboutImg.default : defaultImg
+const allImgsModules = await Astro.glob('../images/*.jpg')
+const allImgs = allImgsModules.map(module => module.default)
+console.log({allImgs})
+
+const applicable = allImgs.find(l => l.toLowerCase().includes(configEntry.aboutImg.toLowerCase()))
+const imgSrc = applicable ? applicable : defaultImg;
 const preferredLocale = getPreferredLangFromHeader(Astro.request);
 let aboutHtml = preferredLocale == "fr" ? `En savoir plus sur le Bénin` : `Learn more about Benin`; 
 let aboutH1 = preferredLocale == "fr" ? "La traduction des sourds au Bénin" : "Deaf owned translation for Benin"
@@ -25,7 +28,7 @@ let aboutH1 = preferredLocale == "fr" ? "La traduction des sourds au Bénin" : "
 		<div class={`relative min-h-60vh border-red-400 bg-cover bg-center bg-black/40`} style={`background-image: linear-gradient(
 			rgba(0, 0, 0, 0.45), 
 			rgba(0, 0, 0, 0.45)
-		), url(${defaultImg})`}  >
+		), url(${imgSrc})`}  >
 			<!-- <img src={imgSrc} class="" alt="About Dot"> -->
 			<div class="text-white absolute bottom-8 text-center left-1/2 -translate-x-1/2 w-full">
 			<p>{aboutHtml}</p>
