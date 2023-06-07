@@ -120,15 +120,13 @@ export function getPreferredLangFromHeader(request: Request) {
   return preferredLocale;
 }
 export function mutateSortVidsArray(vids: IVidWithCustom[]) {
-  const pattern =
-    /^.*?(\d{2})-(?:\d)?[A-Z]{2,3}_(\d?.+?)_([0-9]{2,3})(?:\..+)?$/;
   type accType = {
     matching: IVidWithCustom[];
     notMatching: IVidWithCustom[];
   };
   const filteredByMatchingReferenceId = vids.reduce(
     (accumulator: accType, current) => {
-      if (pattern.test(String(current.reference_id))) {
+      if (current.custom_fields?.book && current.custom_fields?.chapter) {
         accumulator.matching.push(current);
       } else {
         accumulator.notMatching.push(current);

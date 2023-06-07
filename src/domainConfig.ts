@@ -4,5 +4,9 @@ const config: Record<string, Record<string, string>> = {
     license: "benin.md",
     aboutImg: "benin-example",
   },
+  ghana: {
+    playlist: "ghana-new-testament",
+    license: "ghana.md",
+  },
 };
 export default config;
