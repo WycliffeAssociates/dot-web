@@ -117,6 +117,11 @@
 .vjs-chapters-button {
   display: none !important;
 }
+.vjs-text-track-cue b {
+  font-size: 0.65em;
+  display: inline-block;
+  transform: translateY(-8px);
+}
 /* =============== MISC  ============= */
 /* gradients some things just are simpler outside of utility css, but it's nice to still have easy media queries that line up with uno breakpoitns */
 .y-scroll-gradient {
