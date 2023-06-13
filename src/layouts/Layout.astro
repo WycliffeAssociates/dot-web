@@ -61,7 +61,7 @@ const initialPath = Astro.url.pathname
 
     <!-- {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />} -->
   </head>
-  <body class="font-sans leading-relaxed bg-base text-surface">
+  <body class="font-sans leading-relaxed bg-base text-surface pb-[54px]">
     <Header client:load prefersDark={userPreferences?.prefersDark} locale={preferredLocale} initialDict={initialDict} initialPath={initialPath} />
     <slot />
   </body>
