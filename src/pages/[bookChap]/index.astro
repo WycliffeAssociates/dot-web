@@ -15,7 +15,7 @@ import { getPlaylistData } from "@lib/routes";
 // FIGURE OUT WHICH PLAYLIST TO LOAD BASED ON DOMAIN
 import config from 'src/domainConfig.ts'
 let originToMatch = import.meta.env.PROD ? Astro.url.origin : "benin";
-if (originToMatch.includes("dot-web.pages.dev")) {
+if (originToMatch.includes("dot-web.pages.dev") || originToMatch.includes("127.0.0.1") || originToMatch.includes("localhost") ) {
   originToMatch = 'benin'
 }
 let matchingKey = Object.keys(config).find(key => originToMatch.toLowerCase().includes(key.toLowerCase()));
@@ -56,8 +56,9 @@ if (!vids || !vids.length) {
 }
 const {sortedVids, filteredByMatchingReferenceId} = mutateSortVidsArray(vids)
 const bucketized = groupObjectsByKey<IVidWithCustom, "book">(sortedVids, "book");
-bucketized.other = filteredByMatchingReferenceId.notMatching
-
+if (filteredByMatchingReferenceId.notMatching?.length) {
+  bucketized.other = filteredByMatchingReferenceId.notMatching
+}
 // ---ROUTING/INITIAL PROPS
 //Regex = Start with any word or digit, then optional . separator, any number of optional digits (bc we want to match just a book e.g mat if given), and then another set of option digits.  Will match 
 // Luk, Luk.2, LUK.2.7, 2jn.1, luk27.  Even the last is fine without the period since we'll just treat the two matches as book/chap

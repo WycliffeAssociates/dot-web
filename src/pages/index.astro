@@ -18,7 +18,7 @@ import { getPlaylistData } from "@lib/routes";
 import config from 'src/domainConfig.ts'
 let originToMatch = import.meta.env.PROD ? Astro.url.origin : "benin";
 // todo: take out on deploy
-if (originToMatch.includes("dot-web.pages.dev") || originToMatch.includes("127.0.0.1") ) {
+if (originToMatch.includes("dot-web.pages.dev") || originToMatch.includes("127.0.0.1") || originToMatch.includes("localhost") ) {
   originToMatch = 'benin'
 }
 let matchingKey = Object.keys(config).find(key => originToMatch.toLowerCase().includes(key.toLowerCase()));
@@ -59,7 +59,13 @@ if (!vids || !vids.length) {
 }
 const {sortedVids, filteredByMatchingReferenceId} = mutateSortVidsArray(vids)
 const bucketized = groupObjectsByKey<IVidWithCustom, "book">(sortedVids, "book");
-bucketized.other = filteredByMatchingReferenceId.notMatching
+
+if (filteredByMatchingReferenceId.notMatching?.length) {
+  bucketized.other = filteredByMatchingReferenceId.notMatching
+}
+
+
+
 // const chapRouting = routingParts && routingParts?.[2]
 // const verseRouting = routingParts && routingParts?.[3]
 const defaultBook =  bucketized[Object.keys(bucketized)[0]];
