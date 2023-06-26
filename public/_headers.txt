@@ -1,0 +1,6 @@
+# fonts 1 month (max max-age)
+/*.woff
+  Cache-Control: public, max-age=2629746, s-maxage=31536000, must-revalidate
+
+/*.woff2
+  Cache-Control: public, max-age=2629746, s-maxage=31536000, must-revalidate
