@@ -74,6 +74,7 @@ const defaultBook = bookRouting && bucketized[bookRouting] ?
 const defChapIdx = defaultBook.findIndex(chap => Number(chap.chapter) == Number(chapRouting))
 const defaultChap = defChapIdx > -1 ?  defaultBook[defChapIdx]: defaultBook[0]
 const initialData = {vids: defaultBook, chap: defaultChap, verseRouting}
+Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, must-revalidate');
 ---
 
 <Layout title={playlist}>
