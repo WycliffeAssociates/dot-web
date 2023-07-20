@@ -64,9 +64,11 @@ const initialPath = Astro.url.pathname
   <body class="font-sans leading-relaxed bg-base text-surface pb-[54px]">
     <Header client:load prefersDark={userPreferences?.prefersDark} locale={preferredLocale} initialDict={initialDict} initialPath={initialPath} />
     <slot />
-    <!-- Cloudflare Web Analytics -->
+    {import.meta.env.PROD && 
+    // <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "89d66736f5cc483f80819161bfd67ead"}'>
     </script>
-    <!-- End Cloudflare Web Analytics -->
+    // <!-- End Cloudflare Web Analytics -->
+    }
   </body>
 </html>
