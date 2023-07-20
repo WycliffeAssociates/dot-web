@@ -264,9 +264,10 @@ export function VidPlayer(props: IVidPlayerProps) {
       >
         {/* Chapter Back */}
         <button
-          data-title="chapNext"
+          data-title="chapBack"
           class={`text-surface w-12 h-12 md:w-20 md:h-20 bg-gray-200/40 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute left-4 top-1/2 -translate-y-1/2 z-30 ${
-            !trackAdjacentChap().prev && "hidden"
+            (!trackAdjacentChap().prev || vjsPlayer()?.currentTime() == 0) &&
+            "hidden"
           }`}
           onClick={() => {
             getAdjacentChap("PREV");
@@ -300,9 +301,10 @@ export function VidPlayer(props: IVidPlayerProps) {
         </Show>
 
         <button
-          data-title="chapBack"
+          data-title="chapNext"
           class={`text-surface w-12 h-12 md:w-20 md:h-20 bg-gray-200/40 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute right-4 top-1/2 -translate-y-1/2 z-30 ${
-            !trackAdjacentChap().next && "hidden"
+            (!trackAdjacentChap().next || vjsPlayer()?.currentTime() == 0) &&
+            "hidden"
           }`}
           onClick={() => {
             getAdjacentChap("NEXT");
