@@ -193,7 +193,10 @@ export function changePlayerSrc(vid: IVidWithCustom) {
   if (!vjsPlayer()) return;
   vjsPlayer()?.pause();
   changeVid(vid.chapter);
-  vid.sources && vjsPlayer()?.src(vid.sources);
+  const httpsOnly = vid.sources.filter(
+    (srcObj) => !srcObj.src.startsWith("https")
+  );
+  vid.sources && vjsPlayer()?.src(httpsOnly);
   vid.poster && vjsPlayer()?.poster(vid.poster);
   vjsPlayer()?.load();
   vjsPlayer()?.one("loadedmetadata", () => {
