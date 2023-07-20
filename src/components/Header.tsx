@@ -136,7 +136,8 @@ function HeaderInner(props: HeaderProps) {
             </a>
             <a
               class="block  py-3 text-lg hover:(text-primary underline)"
-              href="/about"
+              // todo: change when there are individual about pages. Alos for different environments potentially.
+              href="https://slbible.com/"
             >
               {t("about", undefined, "About")}
             </a>
