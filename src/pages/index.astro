@@ -13,6 +13,12 @@ mutateSortVidsArray,
 import { Header } from "@components/Header";
 import { AppWrapper } from "@components/AppWrapper";
 import { getPlaylistData } from "@lib/routes";
+import { getRuntime } from '@astrojs/cloudflare/runtime';
+
+// const myRuntime = getRuntime(Astro.request);
+// console.log({myRuntime})
+// console.log(import.meta.env.BASE_URL)
+
 
 // FIGURE OUT WHICH PLAYLIST TO LOAD BASED ON DOMAIN
 import config from 'src/domainConfig.ts'

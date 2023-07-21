@@ -12,6 +12,9 @@ import { Header } from "@components/Header";
 import { AppWrapper } from "@components/AppWrapper";
 import { getPlaylistData } from "@lib/routes";
 
+import { getRuntime } from '@astrojs/cloudflare/runtime';
+
+
 // FIGURE OUT WHICH PLAYLIST TO LOAD BASED ON DOMAIN
 import config from 'src/domainConfig.ts'
 let originToMatch = import.meta.env.PROD ? Astro.url.origin : "benin";
@@ -75,6 +78,13 @@ const defChapIdx = defaultBook.findIndex(chap => Number(chap.chapter) == Number(
 const defaultChap = defChapIdx > -1 ?  defaultBook[defChapIdx]: defaultBook[0]
 const initialData = {vids: defaultBook, chap: defaultChap, verseRouting}
 Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, must-revalidate');
+
+const myRuntime = getRuntime(Astro.request);
+
+// const other = import.meta.env?.ACCOUNT_ID;
+// const anotherOther = myRuntime.env; 
+// const cc = myRuntime.
+// console.log({other, anotherOther, cc})
 ---
 
 <Layout title={playlist}>
@@ -87,4 +97,6 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=8640
 </Layout>
 
 
-<!-- <script define:vars={{ myPlayerUrl }} is:inline src={myPlayerUrl}></script> -->
+<script define:vars={{ myRuntime }} is:inline>
+console.log({myRuntime})
+</script>

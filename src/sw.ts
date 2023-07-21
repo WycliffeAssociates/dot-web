@@ -2,6 +2,10 @@ import {clientsClaim} from "workbox-core";
 import {downloadZip} from "client-zip";
 import {SW_CACHE_NAME} from "./constants";
 import {cleanupOutdatedCaches, precacheAndRoute} from "workbox-precaching";
+import {registerRoute} from "workbox-routing";
+import {StaleWhileRevalidate} from "workbox-strategies";
+import {CacheableResponsePlugin} from "workbox-cacheable-response";
+
 import type {customVideoSources} from "@customTypes/types";
 declare const self: ServiceWorkerGlobalScope;
 
@@ -11,6 +15,31 @@ cleanupOutdatedCaches();
 
 precacheAndRoute(self.__WB_MANIFEST);
 
+registerRoute(
+  ({url, sameOrigin}) => {
+    const isForVidJs =
+      url.href.includes("https://players.brightcove.net/6314154063001") ||
+      url.href.includes(
+        "https://players.brightcove.net/videojs-vtt.js/0.15.4/vtt.global.min.js"
+      );
+    const alsoCache =
+      sameOrigin &&
+      (/\/icons\/.*\.png/.test(url.href) ||
+        /fonts\/.+\/.+.woff[2]?/.test(url.href));
+    return isForVidJs || alsoCache;
+    // return false;
+  },
+  new StaleWhileRevalidate({
+    cacheName: "dot-assets",
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [200],
+      }),
+    ],
+  })
+);
+
+// downloads
 self.addEventListener("fetch", async (event) => {
   if (event.request.url.match(/sw-handle-saving/)) {
     async function handleFormRequest() {
