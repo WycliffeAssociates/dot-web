@@ -26,6 +26,9 @@ registerRoute(
       sameOrigin &&
       (/\/icons\/.*\.png/.test(url.href) ||
         /fonts\/.+\/.+.woff[2]?/.test(url.href));
+    if (isForVidJs) {
+      console.log("vidjs file acknowledged from the service worker!");
+    }
     return isForVidJs || alsoCache;
     // return false;
   },
@@ -33,7 +36,7 @@ registerRoute(
     cacheName: "dot-assets",
     plugins: [
       new CacheableResponsePlugin({
-        statuses: [200],
+        statuses: [200, 304],
       }),
     ],
   })

@@ -77,3 +77,7 @@ export interface cloudflareEnv {
   PLAYER_ID: string;
   POLICY_KEY: string;
 }
+export interface envPropsForPlayer {
+  accountId: string;
+  playerId: string;
+}

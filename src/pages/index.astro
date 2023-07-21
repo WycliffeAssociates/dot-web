@@ -1,27 +1,22 @@
 ---
 // home page
 import Layout from "@layouts/Layout.astro";
-import type { IVidWithCustom } from "@customTypes/types";
+import type { IVidWithCustom, cloudflareEnv, envPropsForPlayer } from "@customTypes/types";
 
 import {
 groupObjectsByKey,
 getUserPreferences,
 getPreferredLangFromHeader,
 mutateSortVidsArray,
-// getPreferredLangFromHeader
 } from "@utils";
 import { Header } from "@components/Header";
 import { AppWrapper } from "@components/AppWrapper";
 import { getPlaylistData } from "@lib/routes";
-import { getRuntime } from '@astrojs/cloudflare/runtime';
-
-// const myRuntime = getRuntime(Astro.request);
-// console.log({myRuntime})
-// console.log(import.meta.env.BASE_URL)
 
 
 // FIGURE OUT WHICH PLAYLIST TO LOAD BASED ON DOMAIN
-import config from 'src/domainConfig.ts'
+import config from '@src/domainConfig.ts'
+import { getRuntime } from "@astrojs/cloudflare/runtime";
 let originToMatch = import.meta.env.PROD ? Astro.url.origin : "benin";
 if (originToMatch.includes("dot-web.pages.dev") || originToMatch.includes("127.0.0.1") || originToMatch.includes("localhost") ) {
   originToMatch = 'benin'
@@ -80,12 +75,28 @@ const initialData = {vids: defaultBook, chap: defaultChap, verseRouting:undefine
 // Would cache more aggressivley, but brigthcove videop playback urls are not static.  Cache for 1 hours at a time in browser (in case some) (in case someone caches close to the time that bc cdn changes urls), and then cache on cdn for 1 day at a time. 
 Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, must-revalidate');
 
+let cfEnv: envPropsForPlayer  = {
+  accountId: "", 
+  playerId: ""
+}
+if (import.meta.env.DEV) {
+  cfEnv.accountId = import.meta.env.ACCOUNT_ID,
+  cfEnv.playerId = import.meta.env.PLAYER_ID
+} else  {
+  const runtime = getRuntime<cloudflareEnv>(Astro.request)
+  cfEnv.accountId = runtime.env.ACCOUNT_ID
+  cfEnv.playerId = runtime.env.PLAYER_ID
+}
+if (!cfEnv.accountId || !cfEnv.playerId)  {
+  return Astro.redirect('404')
+}
+
 ---
 
 <Layout title={`DOT ${playlist}`}>
   <div
     class="grid grid-rows-[auto_auto_1fr] overflow-y-auto"
   >
-      <AppWrapper client:load userPreferences={userPreferences} initialData={initialData} playlist={playlist} vids={bucketized} locale={preferredLocale} initialDict={initialDict} videojsInitalDict={videojsInitalDict}/>
+      <AppWrapper client:load userPreferences={userPreferences} initialData={initialData} playlist={playlist} vids={bucketized} locale={preferredLocale} initialDict={initialDict} videojsInitalDict={videojsInitalDict} playerEnv={cfEnv}/>
  </div> 
 </Layout>

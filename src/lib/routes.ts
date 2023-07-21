@@ -16,19 +16,3 @@ export async function getPlaylistData(origin: string, playlist: string) {
     return;
   }
 }
-export async function getCfBcIds(origin: string) {
-  try {
-    const urlBase = import.meta.env.PROD ? origin : "http://127.0.0.1:8788";
-    const urlToFetch = `${urlBase}/api/getId`;
-    const response = await fetch(urlToFetch);
-    if (response.ok) {
-      const data = (await response.json()) as {
-        accountId: string;
-        playerId: string;
-      };
-      return data;
-    }
-  } catch (error) {
-    console.error(error);
-  }
-}

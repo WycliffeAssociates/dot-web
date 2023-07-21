@@ -1,22 +1,22 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import type { IVidWithCustom } from "@customTypes/types"
+import type { IVidWithCustom, cloudflareEnv, envPropsForPlayer } from "@customTypes/types"
 import {
   groupObjectsByKey,
   getUserPreferences,
 getPreferredLangFromHeader,
 mutateSortVidsArray,
-// getPreferredLangFromHeader
+getEnv,
 } from "@utils";
 import { Header } from "@components/Header";
 import { AppWrapper } from "@components/AppWrapper";
 import { getPlaylistData } from "@lib/routes";
 
-import { getRuntime } from '@astrojs/cloudflare/runtime';
 
 
 // FIGURE OUT WHICH PLAYLIST TO LOAD BASED ON DOMAIN
 import config from 'src/domainConfig.ts'
+import { getRuntime } from "@astrojs/cloudflare/runtime";
 let originToMatch = import.meta.env.PROD ? Astro.url.origin : "benin";
 if (originToMatch.includes("dot-web.pages.dev") || originToMatch.includes("127.0.0.1") || originToMatch.includes("localhost") ) {
   originToMatch = 'benin'
@@ -79,12 +79,22 @@ const defaultChap = defChapIdx > -1 ?  defaultBook[defChapIdx]: defaultBook[0]
 const initialData = {vids: defaultBook, chap: defaultChap, verseRouting}
 Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, must-revalidate');
 
-const myRuntime = getRuntime(Astro.request);
+let cfEnv: envPropsForPlayer  = {
+  accountId: "", 
+  playerId: ""
+}
+if (import.meta.env.DEV) {
+  cfEnv.accountId = import.meta.env.ACCOUNT_ID,
+  cfEnv.playerId = import.meta.env.PLAYER_ID
+} else  {
+  const runtime = getRuntime<cloudflareEnv>(Astro.request)
+  cfEnv.accountId = runtime.env.ACCOUNT_ID
+  cfEnv.playerId = runtime.env.PLAYER_ID
+}
+if (!cfEnv.accountId || !cfEnv.playerId)  {
+  return Astro.redirect('404')
+}
 
-// const other = import.meta.env?.ACCOUNT_ID;
-// const anotherOther = myRuntime.env; 
-// const cc = myRuntime.
-// console.log({other, anotherOther, cc})
 ---
 
 <Layout title={playlist}>
@@ -92,11 +102,7 @@ const myRuntime = getRuntime(Astro.request);
     class="grid grid-rows-[auto_auto_1fr] overflow-y-auto"
   
   >
-      <AppWrapper client:load userPreferences={userPreferences} initialData={initialData} playlist={playlist} vids={bucketized} locale={preferredLocale} initialDict={initialDict} videojsInitalDict={videojsInitalDict}/>
+      <AppWrapper client:load userPreferences={userPreferences} initialData={initialData} playlist={playlist} vids={bucketized} locale={preferredLocale} initialDict={initialDict} videojsInitalDict={videojsInitalDict} playerEnv={cfEnv}/>
  </div> 
 </Layout>
 
-
-<script define:vars={{ myRuntime }} is:inline>
-console.log({myRuntime})
-</script>

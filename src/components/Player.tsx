@@ -1,4 +1,8 @@
-import type {IVidWithCustom, userPreferencesI} from "@customTypes/types";
+import type {
+  IVidWithCustom,
+  envPropsForPlayer,
+  userPreferencesI,
+} from "@customTypes/types";
 import {For, Show, createSignal, onMount} from "solid-js";
 import {
   mobileHorizontalPadding,
@@ -45,7 +49,7 @@ import {ChapterList} from "@components/PlayerNavigation/ChaptersList";
 import {SeekBarChapterText} from "@components/Player/SeekBarText";
 import {PLAYER_LOADER_OPTIONS} from "src/constants";
 import {useI18n} from "@solid-primitives/i18n";
-import {DOWNLOAD_SERVICE_WORK_URL, getCfBcIds} from "@lib/routes";
+import {DOWNLOAD_SERVICE_WORK_URL} from "@lib/routes";
 import {throttle} from "@solid-primitives/scheduled";
 import {createResizeObserver} from "@solid-primitives/resize-observer";
 import {normalizeBookName, formatPlayListName} from "@utils";
@@ -60,6 +64,7 @@ interface IVidPlayerProps {
   };
   videojsInitalDict: Record<string, string> | undefined;
   userPreferences: userPreferencesI | undefined;
+  playerEnv: envPropsForPlayer;
 }
 export function VidPlayer(props: IVidPlayerProps) {
   // I'm using the store.ts file as a way to pass around state without context.  (e.g. singletons). These setX calls at the top here run on the server once (since calling setX on any store on server is not the same value the client receives during hydration.)
@@ -88,11 +93,8 @@ export function VidPlayer(props: IVidPlayerProps) {
     // mostly to satisfy ts
     if (!curVid) return;
     // get env vars from bc.
-    const creds = await getCfBcIds(window.location.origin);
-    if (!creds) {
-      return (window.location.href = `${window.location.origin}/404`);
-    }
-    const {accountId, playerId} = creds;
+
+    const {accountId, playerId} = props.playerEnv;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore.  There are no types for this below
     const playerModule = await import("@brightcove/player-loader");

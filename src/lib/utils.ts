@@ -1,7 +1,13 @@
-import type {IVidWithCustom, userPreferencesI} from "@customTypes/types";
-import {baseLocale, supportedLanguages} from "@i18n/index";
+import type {
+  IVidWithCustom,
+  cloudflareEnv,
+  userPreferencesI,
+} from "@customTypes/types";
 import type {AstroGlobal} from "astro";
 import {getBibleBookSort} from "src/constants";
+import {baseLocale, supportedLanguages} from "@i18n/index";
+import {getRuntime} from "@astrojs/cloudflare/runtime";
+
 export function formatDuration(milliseconds: number) {
   // Convert milliseconds to seconds
   const seconds = Math.floor(milliseconds / 1000);
@@ -166,4 +172,15 @@ export function mutateSortVidsArray(vids: IVidWithCustom[]) {
     // vid.localizedBookName = vid.custom_fields?.lo
   });
   return {sortedVids, filteredByMatchingReferenceId};
+}
+
+export function getEnv(request: Request, key: keyof cloudflareEnv) {
+  if (import.meta.env.DEV && import.meta.env.SSR) {
+    console.log(import.meta.env);
+    return import.meta.env[key];
+  } else if (import.meta.env.PROD) {
+    const runtime = getRuntime<cloudflareEnv>(request);
+    const val = runtime.env[key];
+    return val;
+  }
 }

@@ -1,5 +1,6 @@
 import type {
   IVidWithCustom,
+  envPropsForPlayer,
   i18nDictWithLangCode,
   userPreferencesI,
 } from "@customTypes/types";
@@ -19,6 +20,7 @@ interface IAppWrapperProps {
   };
   userPreferences: userPreferencesI | undefined;
   videojsInitalDict: Record<string, string> | undefined;
+  playerEnv: envPropsForPlayer;
 }
 export function AppWrapper(props: IAppWrapperProps) {
   return (
@@ -29,6 +31,7 @@ export function AppWrapper(props: IAppWrapperProps) {
         userPreferences={props.userPreferences}
         vids={props.vids}
         videojsInitalDict={props.videojsInitalDict}
+        playerEnv={props.playerEnv}
       />
     </I18nProvider>
   );
