@@ -16,5 +16,9 @@ const config: Record<string, Record<string, string>> = {
     playlist: "togo-new-testament",
     license: "togo.md",
   },
+  malawi: {
+    playlist: "malawi-new-testament",
+    license: "malawi.md",
+  },
 };
 export default config;
