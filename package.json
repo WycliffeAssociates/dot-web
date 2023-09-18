@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230717.1",
+    "@types/gtag.js": "^0.0.13",
     "@types/video.js": "^7.3.52",
     "@typescript-eslint/eslint-plugin": "^6.1.0",
     "@typescript-eslint/parser": "^6.1.0",

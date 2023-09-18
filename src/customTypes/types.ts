@@ -2,6 +2,13 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 import type {Video, VideoSources} from "./Api";
 
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    dataLayer: Record<string, any>;
+  }
+}
+
 export interface IVidWithCustom extends Video {
   book: string | undefined;
   originalIdx?: number | null;

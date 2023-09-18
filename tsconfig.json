@@ -10,7 +10,8 @@
       "astro/client",
       "@cloudflare/workers-types",
       "vite-plugin-pwa/client",
-      "@types/video.js"
+      "@types/video.js",
+      "@types/gtag.js"
     ],
 
     "paths": {
