@@ -64,15 +64,11 @@ const initialPath = Astro.url.pathname
   <body class="font-sans leading-relaxed bg-base text-surface pb-[54px]">
     <Header client:load prefersDark={userPreferences?.prefersDark} locale={preferredLocale} initialDict={initialDict} initialPath={initialPath} />
     <slot />
+    <!-- Cloudflare and GTAG scripts -->
     {import.meta.env.PROD && 
-    // <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "89d66736f5cc483f80819161bfd67ead"}'>
     </script>
-    // <!-- End Cloudflare Web Analytics -->
-    //Google tag (gtag.js)
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5HN2P1BPRC"></script> 
-    // todo: consider adding partytown if perf suffers?
-    // https://docs.astro.build/en/guides/integrations-guide/partytown/
   }
   </body>
 </html>
