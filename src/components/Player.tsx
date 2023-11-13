@@ -1,9 +1,12 @@
 import type {
   IVidWithCustom,
   envPropsForPlayer,
+  i18nDict,
+  i18nDictWithLangCode,
   userPreferencesI,
 } from "@customTypes/types";
-import {For, Show, createSignal, onMount} from "solid-js";
+import {For, Show, createMemo, createSignal, onMount} from "solid-js";
+import * as i18n from "@solid-primitives/i18n";
 import {
   mobileHorizontalPadding,
   CONTAINER,
@@ -48,7 +51,7 @@ import {
 import {ChapterList} from "@components/PlayerNavigation/ChaptersList";
 import {SeekBarChapterText} from "@components/Player/SeekBarText";
 import {PLAYER_LOADER_OPTIONS} from "src/constants";
-import {useI18n} from "@solid-primitives/i18n";
+
 import {DOWNLOAD_SERVICE_WORK_URL} from "@lib/routes";
 import {throttle} from "@solid-primitives/scheduled";
 import {createResizeObserver} from "@solid-primitives/resize-observer";
@@ -65,6 +68,7 @@ interface IVidPlayerProps {
   videojsInitalDict: Record<string, string> | undefined;
   userPreferences: userPreferencesI | undefined;
   playerEnv: envPropsForPlayer;
+  initialDict: i18nDict;
 }
 export function VidPlayer(props: IVidPlayerProps) {
   // I'm using the store.ts file as a way to pass around state without context.  (e.g. singletons). These setX calls at the top here run on the server once (since calling setX on any store on server is not the same value the client receives during hydration.)
@@ -75,7 +79,8 @@ export function VidPlayer(props: IVidPlayerProps) {
   setPlayerSpeed(props.userPreferences?.playbackSpeed || "1");
   // eslint-disable-next-line solid/reactivity
   setCurrentPlaylist(props.vids);
-  const [t] = useI18n();
+
+  const t = i18n.translator(() => props.initialDict);
   const [showChapSliderButtons, setShowChapSliderButtons] = createSignal(true);
   const [jumpingForwardAmount, setJumpingForwardAmount] = createSignal();
   const [jumpingBackAmount, setJumpingBackAmount] = createSignal();
@@ -426,15 +431,9 @@ export function VidPlayer(props: IVidPlayerProps) {
         class={`${mobileHorizontalPadding} py-2 bg-primary dark:bg-surface/05 text-base rounded-tr-xl rounded-tl-xl  scrollbar-hide min-h-200px`}
       >
         <h2 class="text-white dark:text-neutral-200 font-bold">
-          {t("bibleSelection", undefined, "Bible Selection")}
+          {t("bibleSelection")}
         </h2>
-        <p class="text-white dark:text-neutral-200">
-          {t(
-            "chooseABook",
-            undefined,
-            "Choose a book of the bible to watch here."
-          )}
-        </p>
+        <p class="text-white dark:text-neutral-200">{t("chooseABook")}</p>
         <div class="relative h-full sm:h-auto ">
           <div
             style={{

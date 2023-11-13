@@ -12,39 +12,21 @@ import {
   updateCookiePrefByKey,
 } from "@lib/UI";
 import {ToggleButton} from "@kobalte/core";
-import {ParentProps, Show, createSignal, onMount} from "solid-js";
-import {I18nProvider} from "@components/I18nWrapper";
-import type {i18nDictWithLangCode} from "@customTypes/types";
-import {useI18n} from "@solid-primitives/i18n";
+import {Show, createSignal, onMount} from "solid-js";
+
+import type {i18nDict} from "@customTypes/types";
+import * as i18n from "@solid-primitives/i18n";
 
 type HeaderProps = {
   prefersDark?: boolean | undefined;
   initialPath: string;
+  initialDict: i18nDict;
 };
-interface I18nWrapper extends ParentProps {
-  locale: string;
-  initialDict: i18nDictWithLangCode;
-}
-export function Header(props: HeaderProps & I18nWrapper) {
-  return (
-    <I18nWrappedHeader locale={props.locale} initialDict={props.initialDict}>
-      <HeaderInner {...props} />
-    </I18nWrappedHeader>
-  );
-}
-
-function I18nWrappedHeader(props: I18nWrapper) {
-  return (
-    <I18nProvider locale={props.locale} initialDict={props.initialDict}>
-      {props.children}
-    </I18nProvider>
-  );
-}
-function HeaderInner(props: HeaderProps) {
+export function Header(props: HeaderProps) {
   // eslint-disable-next-line solid/reactivity
   const [prefersDark, setPrefersDark] = createSignal(!!props.prefersDark);
   const [menuIsOpen, setMenuIsOpen] = createSignal(false);
-  const [t] = useI18n();
+  const t = i18n.translator(() => props.initialDict);
 
   onMount(() => {
     const darkModeMediaQuery = setUpThemeListener(setPrefersDark);
@@ -72,7 +54,6 @@ function HeaderInner(props: HeaderProps) {
       <header
         class={`${mobileHorizontalPadding} py-2 flex justify-between items-center relative`}
       >
-        {/* <span class="w-16"> */}
         <span class="w-32">
           <DotLogo />
         </span>
@@ -80,20 +61,18 @@ function HeaderInner(props: HeaderProps) {
           <ToggleButton.Root
             class="toggle-button"
             aria-label="Light Mode or Dark Mode"
-            isPressed={prefersDark()}
+            pressed={prefersDark()}
             onChange={(isPressed) =>
               handleThemeToggle(isPressed as unknown as boolean)
             }
-            // onPressedChange={handleThemeToggle}
           >
             <Show when={prefersDark()} fallback={<IconMoon />}>
               <IconSun />
             </Show>
           </ToggleButton.Root>
-          {/* <button onClick={() => setMenuIsOpen(!menuIsOpen())}>
-          </button> */}
+
           <ToggleButton.Root
-            isPressed={menuIsOpen()}
+            pressed={menuIsOpen()}
             onChange={() => setMenuIsOpen(!menuIsOpen())}
           >
             <IconMenu classNames="w-8" />
@@ -110,7 +89,7 @@ function HeaderInner(props: HeaderProps) {
       <div class="relative overflow-hidden w-full">
         <div
           class={`w-full max-w-md  z-40 bg-white absolute right-0 top-0 transform transition-250 translate-x-full p-4 h-full fixed rounded-md dark:bg-[#181817] ${
-            menuIsOpen() ? "translate-x-0" : ""
+            menuIsOpen() ? "translate-x-0!" : ""
           }`}
         >
           <button
@@ -125,21 +104,21 @@ function HeaderInner(props: HeaderProps) {
                 class="block py-3  text-lg hover:(text-primary underline)"
                 href="/"
               >
-                {t("homePage", undefined, "Home")}
+                {t("homePage")}
               </a>
             </Show>
             <a
               class="block  py-3 text-lg hover:(text-primary underline)"
               href="/license"
             >
-              {t("license", undefined, "License")}
+              {t("license")}
             </a>
             <a
               class="block  py-3 text-lg hover:(text-primary underline)"
               // todo: change when there are individual about pages. Alos for different environments potentially.
               href="https://slbible.com/"
             >
-              {t("about", undefined, "About")}
+              {t("about")}
             </a>
           </div>
         </div>

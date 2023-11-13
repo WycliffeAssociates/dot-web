@@ -6,7 +6,6 @@ import type {
 import type {AstroGlobal} from "astro";
 import {getBibleBookSort} from "src/constants";
 import {baseLocale, supportedLanguages} from "@i18n/index";
-import {getRuntime} from "@astrojs/cloudflare/runtime";
 
 export function formatDuration(milliseconds: number) {
   // Convert milliseconds to seconds
@@ -99,7 +98,7 @@ export function getUserPreferences(
   AstroObj: AstroGlobal
 ): userPreferencesI | undefined {
   if (AstroObj.cookies.has("userPreferences")) {
-    const cookie = AstroObj.cookies.get("userPreferences").json();
+    const cookie = AstroObj.cookies.get("userPreferences")?.json();
     return cookie as userPreferencesI;
   }
 }
@@ -173,6 +172,7 @@ export function mutateSortVidsArray(vids: IVidWithCustom[]) {
   });
   return {sortedVids, filteredByMatchingReferenceId};
 }
+<<<<<<< HEAD
 
 export function getEnv(request: Request, key: keyof cloudflareEnv) {
   if (import.meta.env.DEV && import.meta.env.SSR) {
@@ -208,3 +208,5 @@ export function throttle(cb: () => {}, delay = 1000) {
     setTimeout(timeoutFunc, delay);
   };
 }
+=======
+>>>>>>> 3f93775 (update deps.  Refactors around that)

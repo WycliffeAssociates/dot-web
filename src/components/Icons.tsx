@@ -11,7 +11,7 @@ interface IDotLogo extends IconProps {
 }
 export function DotLogo(props: IDotLogo) {
   const defaultProps = {
-    fillColor: "fill-surface",
+    fillColor: "fill-surface ",
     dotOne: "fill-primary",
     dotTwo: "fill-secondary",
     dotThree: "fill-tertiary",

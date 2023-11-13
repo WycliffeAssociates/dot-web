@@ -5,6 +5,7 @@ import {cleanupOutdatedCaches, precacheAndRoute} from "workbox-precaching";
 import {registerRoute} from "workbox-routing";
 import {StaleWhileRevalidate} from "workbox-strategies";
 import {CacheableResponsePlugin} from "workbox-cacheable-response";
+self.__WB_DISABLE_DEV_LOGS = true;
 
 import type {customVideoSources} from "@customTypes/types";
 declare const self: ServiceWorkerGlobalScope;

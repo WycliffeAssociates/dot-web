@@ -1,18 +1,18 @@
 :root,
 :root.light {
-  --clrSurface: 90, 3%, 12%; /* hsl(90,3%,12%) */
-  --clrBase: 72, 46%, 98%; /* hsl(72, 46%, 98%) */
-  --clrPrimary: 20, 100%, 56%; /* hsl(20, 100%, 56%) */
-  --clrSecondary: 75, 89%, 56%; /* hsl(75, 89%, 56%) */
-  --clrTertiary: 240, 96%, 68%; /* hsl(240, 96%, 68%) */
+  --clrSurface: 90 3% 12%; /* hsl(90,3%,12%) */
+  --clrBase: 72 46% 98%; /* hsl(72, 46%, 98%) */
+  --clrPrimary: 20 100% 56%; /* hsl(20, 100%, 56%) */
+  --clrSecondary: 75 89% 56%; /* hsl(75, 89%, 56%) */
+  --clrTertiary: 240 96% 68%; /* hsl(240, 96%, 68%) */
 }
 
 :root.dark {
-  --clrSurface: 72, 46%, 98%; /* hsl(72, 46%, 98%) */
-  --clrBase: 90, 3%, 12%; /* hsl(90,3%,12%) */
-  --clrPrimary: 20, 100%, 56%; /* hsl(20, 100%, 56%) */
-  --clrSecondary: 75, 89%, 56%; /* hsl(75, 89%, 56%) */
-  --clrTertiary: 240, 96%, 68%; /* hsl(240, 96%, 68%) */
+  --clrSurface: 72 46% 98%; /* hsl(72, 46%, 98%) */
+  --clrBase: 90 3% 12%; /* hsl(90,3%,12%) */
+  --clrPrimary: 20 100% 56%; /* hsl(20, 100%, 56%) */
+  --clrSecondary: 75 89% 56%; /* hsl(75 89% 56%) */
+  --clrTertiary: 240 96% 68%; /* hsl(240 96%, 68%) */
 }
 
 /* SELF HOSTED FONTS */
@@ -38,6 +38,53 @@
 }
 
 /* =============== VIDEO JS STUFF  ============= */
+/********** Range Input Styles **********/
+/*Range Reset*/
+input[type="range"] {
+  -webkit-appearance: none;
+  @apply appearance-none bg-transparent cursor-pointer w-40;
+}
+
+/* Removes default focus */
+input[type="range"]:focus {
+  @apply outline-none;
+}
+
+/***** Chrome, Safari, Opera and Edge Chromium styles *****/
+/* slider track */
+input[type="range"]::-webkit-slider-runnable-track {
+  -webkit-appearance: none; /* Override default look */
+  @apply bg-primary/20 rounded-md h-2;
+}
+
+/* slider thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  @apply mt--2 h-6 w-6 rounded-full bg-primary/80
+  /* margin-top: -12px; Centers thumb on the track */;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  @apply border border-gray-500 outline outline-3 outline-gray-500 outline-offset-2;
+}
+
+/******** Firefox styles ********/
+/* slider track */
+input[type="range"]::-moz-range-track {
+  @apply bg-primary/20 rounded-md h-2;
+}
+
+/* slider thumb */
+input[type="range"]::-moz-range-thumb {
+  @apply mt--2 h-6 w-6 rounded-full bg-primary/80;
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+  @apply border border-gray-500 outline outline-3 outline-gray-500 outline-offset-2;
+}
+/********** Range Input Styles **********/
+/*Range Reset*/
+
 .video-js {
   width: 100% !important;
   height: 100% !important;
@@ -188,51 +235,6 @@
   100% {
     transform: translateY(-50%) scale(50);
   }
-}
-
-/********** Range Input Styles **********/
-/*Range Reset*/
-input[type="range"] {
-  -webkit-appearance: none;
-  @apply appearance-none bg-transparent cursor-pointer w-40;
-}
-
-/* Removes default focus */
-input[type="range"]:focus {
-  @apply outline-none;
-}
-
-/***** Chrome, Safari, Opera and Edge Chromium styles *****/
-/* slider track */
-input[type="range"]::-webkit-slider-runnable-track {
-  -webkit-appearance: none; /* Override default look */
-  @apply bg-primary/20 rounded-md h-2;
-}
-
-/* slider thumb */
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none; /* Override default look */
-  @apply mt--2 h-6 w-6 rounded-full bg-primary/80
-  /* margin-top: -12px; Centers thumb on the track */;
-}
-
-input[type="range"]:focus::-webkit-slider-thumb {
-  @apply border border-gray-500 outline outline-3 outline-gray-500 outline-offset-2;
-}
-
-/******** Firefox styles ********/
-/* slider track */
-input[type="range"]::-moz-range-track {
-  @apply bg-primary/20 rounded-md h-2;
-}
-
-/* slider thumb */
-input[type="range"]::-moz-range-thumb {
-  @apply mt--2 h-6 w-6 rounded-full bg-primary/80;
-}
-
-input[type="range"]:focus::-moz-range-thumb {
-  @apply border border-gray-500 outline outline-3 outline-gray-500 outline-offset-2;
 }
 
 .licenseContainer h1 {

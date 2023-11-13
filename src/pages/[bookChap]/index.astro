@@ -10,15 +10,13 @@ import {
   getUserPreferences,
   getPreferredLangFromHeader,
   mutateSortVidsArray,
-  getEnv,
 } from "@utils";
-import {Header} from "@components/Header";
 import {AppWrapper} from "@components/AppWrapper";
 import {getPlaylistData} from "@lib/routes";
 
 // FIGURE OUT WHICH PLAYLIST TO LOAD BASED ON DOMAIN
 import config from "src/domainConfig.ts";
-import {getRuntime} from "@astrojs/cloudflare/runtime";
+
 let originToMatch = import.meta.env.PROD ? Astro.url.origin : "cameroon";
 if (
   originToMatch.includes("dot-web.pages.dev") ||
@@ -41,9 +39,7 @@ if (!playlist) return Astro.redirect("404");
 // Setup i18n
 const preferredLocale = getPreferredLangFromHeader(Astro.request);
 const initialDictModule = await import(`../../i18n/${preferredLocale}.ts`);
-const initialDict = {
-  [preferredLocale]: initialDictModule.default,
-};
+const initialDict = initialDictModule.default;
 let videojsInitalDict;
 try {
   let module = await import(
@@ -106,7 +102,7 @@ if (import.meta.env.DEV) {
   (cfEnv.accountId = import.meta.env.ACCOUNT_ID),
     (cfEnv.playerId = import.meta.env.PLAYER_ID);
 } else {
-  const runtime = getRuntime<cloudflareEnv>(Astro.request);
+  const runtime = Astro.locals.runtime;
   cfEnv.accountId = runtime.env.ACCOUNT_ID;
   cfEnv.playerId = runtime.env.PLAYER_ID;
 }
@@ -115,7 +111,11 @@ if (!cfEnv.accountId || !cfEnv.playerId) {
 }
 ---
 
-<Layout title={playlist}>
+<Layout
+  title={playlist}
+  initialDict={initialDict}
+  preferredLocale={preferredLocale}
+>
   <div class="grid grid-rows-[auto_auto_1fr] overflow-y-auto">
     <AppWrapper
       client:load

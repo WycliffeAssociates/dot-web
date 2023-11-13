@@ -1,20 +1,33 @@
 ---
 import Layout from "@layouts/Layout.astro";
-import config from 'src/domainConfig.ts'
-const allLicense = await Astro.glob('../licenses/*.md');
+import {getPreferredLangFromHeader} from "@lib/utils";
+import config from "src/domainConfig.ts";
+const allLicense = await Astro.glob("../licenses/*.md");
 let originToMatch = import.meta.env.PROD ? Astro.url.origin : "benin";
 if (originToMatch.includes("dot-web.pages.dev")) {
-  originToMatch = 'benin'
+  originToMatch = "benin";
 }
-const configKey = Object.keys(config).find(key => originToMatch.toLowerCase().includes(key.toLowerCase()))
-if (!configKey) return Astro.redirect('404')
-const configEntry = config[configKey]
-if (!configEntry || !configEntry.license) return Astro.redirect('404')
-const applicable = allLicense.find(l => l.file.toLowerCase().includes(configEntry.license.toLowerCase()))
-let Content = applicable ? applicable.Content : "couldn't find that"
+const configKey = Object.keys(config).find((key) =>
+  originToMatch.toLowerCase().includes(key.toLowerCase())
+);
+if (!configKey) return Astro.redirect("404");
+const configEntry = config[configKey];
+if (!configEntry || !configEntry.license) return Astro.redirect("404");
+const applicable = allLicense.find((l) =>
+  l.file.toLowerCase().includes(configEntry.license.toLowerCase())
+);
+const preferredLocale = getPreferredLangFromHeader(Astro.request);
+const initialDictModule = await import(`../i18n/${preferredLocale}.ts`);
+const initialDict = initialDictModule.default;
+let Content = applicable ? applicable.Content : "couldn't find that";
 ---
-<Layout title="license">
-	<div class="max-w-prose mx-auto p-4 licenseContainer text-xl leading-loose">
-		<Content/>
-	</div>
+
+<Layout
+  title="license"
+  initialDict={initialDict}
+  preferredLocale={preferredLocale}
+>
+  <div class="max-w-prose mx-auto p-4 licenseContainer text-xl leading-loose">
+    <Content />
+  </div>
 </Layout>

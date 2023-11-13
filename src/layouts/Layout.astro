@@ -1,22 +1,20 @@
 ---
 export interface Props {
   title: string;
+  initialDict: Record<string, string>;
+  preferredLocale: string;
 }
 
-import { Header } from "@components/Header";
+import {Header} from "@components/Header";
 const {title} = Astro.props;
-import {getUserPreferences, getPreferredLangFromHeader} from "@lib/utils";
+import {getUserPreferences} from "@lib/utils";
 import "../global.css";
 import "@unocss/reset/tailwind.css";
 let userPreferences = getUserPreferences(Astro);
 
 // SETUP I18N
-const preferredLocale = getPreferredLangFromHeader(Astro.request)
-const initialDictModule = await import(`../i18n/${preferredLocale}.ts`)
-const initialDict = {
-  [preferredLocale]: initialDictModule.default
-}
-const initialPath = Astro.url.pathname
+const {initialDict, preferredLocale} = Astro.props;
+const initialPath = Astro.url.pathname;
 ---
 
 <!DOCTYPE html>
@@ -58,18 +56,36 @@ const initialPath = Astro.url.pathname
     <title>{title}</title>
     <link href="https://vjs.zencdn.net/8.0.4/video-js.css" rel="stylesheet" />
     <script src="/src/pwa.ts"></script>
-
-    <!-- {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />} -->
   </head>
   <body class="font-sans leading-relaxed bg-base text-surface pb-[54px]">
-    <Header client:load prefersDark={userPreferences?.prefersDark} locale={preferredLocale} initialDict={initialDict} initialPath={initialPath} />
+    <Header
+      client:load
+      prefersDark={userPreferences?.prefersDark}
+      initialDict={initialDict}
+      initialPath={initialPath}
+    />
+
     <slot />
+<<<<<<< HEAD
     <!-- Cloudflare and GTAG scripts -->
     {import.meta.env.PROD && 
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "89d66736f5cc483f80819161bfd67ead"}'>
     </script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5HN2P1BPRC"></script> 
   }
+=======
+    <!-- Cloudflare Web Analytics -->
+    {
+      import.meta.env.PROD && (
+        <script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "89d66736f5cc483f80819161bfd67ead"}'
+        />
+      )
+    }
+    <!-- cloudflare -->
+>>>>>>> 3f93775 (update deps.  Refactors around that)
   </body>
 </html>
 
