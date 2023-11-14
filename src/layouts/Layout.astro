@@ -66,14 +66,6 @@ const initialPath = Astro.url.pathname;
     />
 
     <slot />
-<<<<<<< HEAD
-    <!-- Cloudflare and GTAG scripts -->
-    {import.meta.env.PROD && 
-    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "89d66736f5cc483f80819161bfd67ead"}'>
-    </script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5HN2P1BPRC"></script> 
-  }
-=======
     <!-- Cloudflare Web Analytics -->
     {
       import.meta.env.PROD && (
@@ -85,14 +77,16 @@ const initialPath = Astro.url.pathname;
       )
     }
     <!-- cloudflare -->
->>>>>>> 3f93775 (update deps.  Refactors around that)
   </body>
 </html>
 
-<script>   
-if (import.meta.env.PROD) {
-  const gtag: Gtag.Gtag = function () {window.dataLayer.push(arguments);};
-  window.dataLayer = window.dataLayer || [];   
-   gtag('js', new Date());   gtag('config', 'G-5HN2P1BPRC'); 
-}
+<script>
+  if (import.meta.env.PROD) {
+    const gtag: Gtag.Gtag = function () {
+      window.dataLayer.push(arguments);
+    };
+    window.dataLayer = window.dataLayer || [];
+    gtag("js", new Date());
+    gtag("config", "G-5HN2P1BPRC");
+  }
 </script>
