@@ -1,4 +1,4 @@
-# Cameroonian Sign Language New Testament
+# Cameroonian Anglophone Sign Language New Testament
 ©2023 Bible in Every Language Missions Community
 Released under a Creative Commons Attribution-Share Alike 4.0 International License.
 
