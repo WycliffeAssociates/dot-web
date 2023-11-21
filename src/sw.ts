@@ -81,7 +81,27 @@ registerRoute(
     ],
   })
 );
-
+// cdn video segments
+registerRoute(
+  ({url}) => {
+    const vidSegmentFile = /akamaihd.+segment/;
+    const isSegmentFile = vidSegmentFile.test(url.href);
+    return isSegmentFile;
+  },
+  new CacheFirst({
+    cacheName: "dot-vid-segments",
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [200, 304],
+      }),
+      new ExpirationPlugin({
+        maxEntries: 50000,
+        maxAgeSeconds: 60 * 60 * 24 * 90, // 180 days
+      }),
+    ],
+  })
+);
+// html navigations
 registerRoute(
   ({request}) => {
     if (request.mode == "navigate") {

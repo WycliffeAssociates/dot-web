@@ -82,11 +82,6 @@ const initialData = {
   chap: defaultChap,
   verseRouting: undefined,
 };
-// Would cache more aggressivley, but brigthcove videop playback urls are not static.  Cache for 1 hours at a time in browser (in case some) (in case someone caches close to the time that bc cdn changes urls), and then cache on cdn for 1 day at a time.
-Astro.response.headers.set(
-  "Cache-Control",
-  "public, max-age=3600, s-maxage=86400, must-revalidate"
-);
 
 let cfEnv: envPropsForPlayer = {
   accountId: "",
