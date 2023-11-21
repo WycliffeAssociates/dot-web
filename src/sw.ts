@@ -5,6 +5,8 @@ import {cleanupOutdatedCaches, precacheAndRoute} from "workbox-precaching";
 import {registerRoute} from "workbox-routing";
 import {StaleWhileRevalidate} from "workbox-strategies";
 import {CacheableResponsePlugin} from "workbox-cacheable-response";
+import {ExpirationPlugin} from "workbox-expiration";
+
 self.__WB_DISABLE_DEV_LOGS = true;
 
 import type {customVideoSources} from "@customTypes/types";
@@ -17,16 +19,18 @@ cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
 registerRoute(
-  ({url, sameOrigin}) => {
+  ({url, sameOrigin, request}) => {
     const isForVidJs =
       url.href.includes("https://players.brightcove.net/6314154063001") ||
       url.href.includes(
         "https://players.brightcove.net/videojs-vtt.js/0.15.4/vtt.global.min.js"
       );
+
     const alsoCache =
       sameOrigin &&
       (/\/icons\/.*\.png/.test(url.href) ||
-        /fonts\/.+\/.+.woff[2]?/.test(url.href));
+        /fonts\/.+\/.+.woff[2]?/.test(url.href) ||
+        request.destination == "image");
     if (isForVidJs) {
       console.log("vidjs file acknowledged from the service worker!");
     }
@@ -38,6 +42,28 @@ registerRoute(
     plugins: [
       new CacheableResponsePlugin({
         statuses: [200, 304],
+      }),
+    ],
+  })
+);
+// static assets
+
+registerRoute(
+  ({request}) => {
+    if (request.mode == "navigate") {
+      console.log("dot-html cache hit");
+      return true;
+    }
+  },
+  new StaleWhileRevalidate({
+    cacheName: "dot-html",
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [200, 304],
+      }),
+      new ExpirationPlugin({
+        maxEntries: 1000,
+        maxAgeSeconds: 60 * 60 * 24 * 30 * 2, //60 days
       }),
     ],
   })
