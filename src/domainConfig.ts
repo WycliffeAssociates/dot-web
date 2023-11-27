@@ -24,5 +24,9 @@ const config: Record<string, Record<string, string>> = {
     playlist: "cameroon-new-testament",
     license: "cameroon.md",
   },
+  tanzania: {
+    playlist: "tanzania-new-testament",
+    license: "tanzania.md",
+  },
 };
 export default config;
