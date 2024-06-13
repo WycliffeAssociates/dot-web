@@ -238,16 +238,22 @@ export interface FullRequestParams extends Omit<RequestInit, "body"> {
   cancelToken?: CancelToken;
 }
 
-export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
+export type RequestParams = Omit<
+  FullRequestParams,
+  "body" | "method" | "query" | "path"
+>;
 
 export interface ApiConfig<SecurityDataType = unknown> {
   baseUrl?: string;
   baseApiParams?: Omit<RequestParams, "baseUrl" | "cancelToken" | "signal">;
-  securityWorker?: (securityData: SecurityDataType | null) => Promise<RequestParams | void> | RequestParams | void;
+  securityWorker?: (
+    securityData: SecurityDataType | null
+  ) => Promise<RequestParams | void> | RequestParams | void;
   customFetch?: typeof fetch;
 }
 
-export interface HttpResponse<D extends unknown, E extends unknown = unknown> extends Response {
+export interface HttpResponse<D extends unknown, E extends unknown = unknown>
+  extends Response {
   data: D;
   error: E;
 }
@@ -266,7 +272,8 @@ export class HttpClient<SecurityDataType = unknown> {
   private securityData: SecurityDataType | null = null;
   private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
   private abortControllers = new Map<CancelToken, AbortController>();
-  private customFetch = (...fetchParams: Parameters<typeof fetch>) => fetch(...fetchParams);
+  private customFetch = (...fetchParams: Parameters<typeof fetch>) =>
+    fetch(...fetchParams);
 
   private baseApiParams: RequestParams = {
     credentials: "same-origin",
@@ -285,7 +292,9 @@ export class HttpClient<SecurityDataType = unknown> {
 
   protected encodeQueryParam(key: string, value: any) {
     const encodedKey = encodeURIComponent(key);
-    return `${encodedKey}=${encodeURIComponent(typeof value === "number" ? value : `${value}`)}`;
+    return `${encodedKey}=${encodeURIComponent(
+      typeof value === "number" ? value : `${value}`
+    )}`;
   }
 
   protected addQueryParam(query: QueryParamsType, key: string) {
@@ -299,9 +308,15 @@ export class HttpClient<SecurityDataType = unknown> {
 
   protected toQueryString(rawQuery?: QueryParamsType): string {
     const query = rawQuery || {};
-    const keys = Object.keys(query).filter((key) => "undefined" !== typeof query[key]);
+    const keys = Object.keys(query).filter(
+      (key) => "undefined" !== typeof query[key]
+    );
     return keys
-      .map((key) => (Array.isArray(query[key]) ? this.addArrayQueryParam(query, key) : this.addQueryParam(query, key)))
+      .map((key) =>
+        Array.isArray(query[key])
+          ? this.addArrayQueryParam(query, key)
+          : this.addQueryParam(query, key)
+      )
       .join("&");
   }
 
@@ -312,8 +327,13 @@ export class HttpClient<SecurityDataType = unknown> {
 
   private contentFormatters: Record<ContentType, (input: any) => any> = {
     [ContentType.Json]: (input: any) =>
-      input !== null && (typeof input === "object" || typeof input === "string") ? JSON.stringify(input) : input,
-    [ContentType.Text]: (input: any) => (input !== null && typeof input !== "string" ? JSON.stringify(input) : input),
+      input !== null && (typeof input === "object" || typeof input === "string")
+        ? JSON.stringify(input)
+        : input,
+    [ContentType.Text]: (input: any) =>
+      input !== null && typeof input !== "string"
+        ? JSON.stringify(input)
+        : input,
     [ContentType.FormData]: (input: any) =>
       Object.keys(input || {}).reduce((formData, key) => {
         const property = input[key];
@@ -323,14 +343,17 @@ export class HttpClient<SecurityDataType = unknown> {
             ? property
             : typeof property === "object" && property !== null
             ? JSON.stringify(property)
-            : `${property}`,
+            : `${property}`
         );
         return formData;
       }, new FormData()),
     [ContentType.UrlEncoded]: (input: any) => this.toQueryString(input),
   };
 
-  protected mergeRequestParams(params1: RequestParams, params2?: RequestParams): RequestParams {
+  protected mergeRequestParams(
+    params1: RequestParams,
+    params2?: RequestParams
+  ): RequestParams {
     return {
       ...this.baseApiParams,
       ...params1,
@@ -343,7 +366,9 @@ export class HttpClient<SecurityDataType = unknown> {
     };
   }
 
-  protected createAbortSignal = (cancelToken: CancelToken): AbortSignal | undefined => {
+  protected createAbortSignal = (
+    cancelToken: CancelToken
+  ): AbortSignal | undefined => {
     if (this.abortControllers.has(cancelToken)) {
       const abortController = this.abortControllers.get(cancelToken);
       if (abortController) {
@@ -387,15 +412,27 @@ export class HttpClient<SecurityDataType = unknown> {
     const payloadFormatter = this.contentFormatters[type || ContentType.Json];
     const responseFormat = format || requestParams.format;
 
-    return this.customFetch(`${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`, {
-      ...requestParams,
-      headers: {
-        ...(requestParams.headers || {}),
-        ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
-      },
-      signal: cancelToken ? this.createAbortSignal(cancelToken) : requestParams.signal,
-      body: typeof body === "undefined" || body === null ? null : payloadFormatter(body),
-    }).then(async (response) => {
+    return this.customFetch(
+      `${baseUrl || this.baseUrl || ""}${path}${
+        queryString ? `?${queryString}` : ""
+      }`,
+      {
+        ...requestParams,
+        headers: {
+          ...(requestParams.headers || {}),
+          ...(type && type !== ContentType.FormData
+            ? {"Content-Type": type}
+            : {}),
+        },
+        signal: cancelToken
+          ? this.createAbortSignal(cancelToken)
+          : requestParams.signal,
+        body:
+          typeof body === "undefined" || body === null
+            ? null
+            : payloadFormatter(body),
+      }
+    ).then(async (response) => {
       const r = response as HttpResponse<T, E>;
       r.data = null as unknown as T;
       r.error = null as unknown as E;
@@ -441,7 +478,9 @@ export class HttpClient<SecurityDataType = unknown> {
  *
  * **Base URL**: https://edge.api.brightcove.com/playback/v1
  */
-export class playbackApi<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
+export class playbackApi<
+  SecurityDataType extends unknown
+> extends HttpClient<SecurityDataType> {
   accounts = {
     /**
      * @description Gets a page of video objects that are related to the specified video. Using the name and short description of the specified video, the Playback API searches for videos with any partial matches in the following fields: `name`, `short` `description`, `long_description`, `tags`. Notes:  When performing a search (using the `q` parameter), you must use a search-enabled Policy Key. For information on getting policy keys, see the [Policy API Overview](/policy/getting-started/overview-policy-api.html). You can also use this [sample app](/policy/getting-started/quick-start-policy-api.html) to create a search-enabled key In general, search-enabled Policy Keys should only be stored on a server and not in a browser player or mobile app, since they can be used to list all playable videos. For some accounts this may not be applicable if you do not care if all of your playable videos can be discovered. The response results for this endpoint are subject to change as we improve the algorithm for finding related videos. If you do not want your results to change, or if you want precise control, then you should use the [Get Videos endpoint](#operation/Get_Videos) with a search parameter. Any geo-restricted videos that are denied for the particular requestor are omitted from the results. As long as some videos are allowed the request is considered successful. An errors field is added to the result with a summary explaining why videos were omitted.
@@ -481,7 +520,7 @@ export class playbackApi<SecurityDataType extends unknown> extends HttpClient<Se
         /** include and set equal to the [delivery rules id](/delivery-rules/guides/index.html) in order to have the delivery rules applied */
         config_id?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<GetVideosResponse, void>({
         path: `/accounts/${accountId}/videos/${videoId}/related`,
@@ -516,7 +555,7 @@ export class playbackApi<SecurityDataType extends unknown> extends HttpClient<Se
         /** include and set equal to the [delivery rules id](/delivery-rules/guides/index.html) in order to have the delivery rules applied */
         config_id?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<Video, void>({
         path: `/accounts/${accountId}/videos/${videoId}`,
@@ -544,6 +583,7 @@ export class playbackApi<SecurityDataType extends unknown> extends HttpClient<Se
      */
     getVideos: (
       accountId: string,
+      // @ts-ignore
       videoId: string,
       query?: {
         /** search string - see [search guide](/cms/searching/cmsplayback-api-videos-search.html) for details */
@@ -581,7 +621,7 @@ export class playbackApi<SecurityDataType extends unknown> extends HttpClient<Se
         /** include and set equal to the [delivery rules id](/delivery-rules/guides/index.html) in order to have the delivery rules applied */
         config_id?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<GetVideosResponse, void>({
         path: `/accounts/${accountId}/videos`,
@@ -616,7 +656,7 @@ export class playbackApi<SecurityDataType extends unknown> extends HttpClient<Se
         /** include and set equal to the [delivery rules id](/delivery-rules/guides/index.html) in order to have the delivery rules applied */
         config_id?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/accounts/${accountId}/videos/${videoId}/master.m3u8`,
@@ -650,7 +690,7 @@ export class playbackApi<SecurityDataType extends unknown> extends HttpClient<Se
         /** include and set equal to the [delivery rules id](/delivery-rules/guides/index.html) in order to have the delivery rules applied */
         config_id?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/accounts/${accountId}/videos/${videoId}/manifest.mpd`,
@@ -684,7 +724,7 @@ export class playbackApi<SecurityDataType extends unknown> extends HttpClient<Se
         /** include and set equal to the [delivery rules id](/delivery-rules/guides/index.html) in order to have the delivery rules applied */
         config_id?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/accounts/${accountId}/videos/${videoId}/hls.vmap`,
@@ -718,7 +758,7 @@ export class playbackApi<SecurityDataType extends unknown> extends HttpClient<Se
         /** include and set equal to the [delivery rules id](/delivery-rules/guides/index.html) in order to have the delivery rules applied */
         config_id?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/accounts/${accountId}/videos/${videoId}/dash.vmap`,
@@ -752,7 +792,7 @@ export class playbackApi<SecurityDataType extends unknown> extends HttpClient<Se
         /** include and set equal to the [delivery rules id](/delivery-rules/guides/index.html) in order to have the delivery rules applied */
         config_id?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/accounts/${accountId}/videos/${videoId}/high.mp4`,
@@ -786,7 +826,7 @@ export class playbackApi<SecurityDataType extends unknown> extends HttpClient<Se
         /** include and set equal to the [delivery rules id](/delivery-rules/guides/index.html) in order to have the delivery rules applied */
         config_id?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/accounts/${accountId}/videos/${videoId}/low.mp4`,
@@ -833,7 +873,7 @@ export class playbackApi<SecurityDataType extends unknown> extends HttpClient<Se
         /** include and set equal to the [delivery rules id](/delivery-rules/guides/index.html) in order to have the delivery rules applied */
         config_id?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<PlaylistResponse, void>({
         path: `/accounts/${accountId}/playlists/${playlistId}`,

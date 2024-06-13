@@ -13,19 +13,19 @@ import "@unocss/reset/tailwind.css";
 let userPreferences = getUserPreferences(Astro);
 
 // SETUP I18N
-const {initialDict, preferredLocale} = Astro.props;
+const {initialDict} = Astro.props;
 const initialPath = Astro.url.pathname;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html
   lang="en"
   class={`bg-base ${
     userPreferences?.prefersDark
       ? "dark"
       : userPreferences?.prefersDark === false
-      ? "light"
-      : ""
+        ? "light"
+        : ""
   }`}
 >
   <head>
@@ -71,6 +71,7 @@ const initialPath = Astro.url.pathname;
       import.meta.env.PROD && (
         <script
           defer
+          is:inline
           src="https://static.cloudflareinsights.com/beacon.min.js"
           data-cf-beacon='{"token": "89d66736f5cc483f80819161bfd67ead"}'
         />
@@ -82,6 +83,7 @@ const initialPath = Astro.url.pathname;
 
 <script>
   if (import.meta.env.PROD) {
+    // @ts-ignore
     const gtag: Gtag.Gtag = function () {
       window.dataLayer.push(arguments);
     };

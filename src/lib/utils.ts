@@ -1,8 +1,4 @@
-import type {
-  IVidWithCustom,
-  cloudflareEnv,
-  userPreferencesI,
-} from "@customTypes/types";
+import type {IVidWithCustom, userPreferencesI} from "@customTypes/types";
 import type {AstroGlobal} from "astro";
 import {getBibleBookSort} from "src/constants";
 import {baseLocale, supportedLanguages} from "@i18n/index";

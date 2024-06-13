@@ -36,7 +36,10 @@ export default defineConfig({
   output: "server",
 
   adapter: cloudflare({
-    mode: "directory",
+    platformProxy: {
+      enabled: true,
+      configPath: ".dev.vars",
+    },
   }),
   vite: {
     // build: {

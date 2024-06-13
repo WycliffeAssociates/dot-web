@@ -8,7 +8,6 @@ declare global {
     dataLayer: Record<string, any>;
   }
 }
-
 export interface IVidWithCustom extends Video {
   book: string | undefined;
   originalIdx?: number | null;

@@ -51,7 +51,7 @@ export function DownloadMenu(props: IDownloadMenu) {
             <SingleDownloadSelect
               formName={props.formName}
               placeholder="Select video quality"
-              selectOptions={currentMp4Sources()}
+              selectOptions={currentMp4Sources()!}
               onValueChange={(val) => populateSwPayload({type: "VID", val})}
             />
           </div>
@@ -62,7 +62,7 @@ export function DownloadMenu(props: IDownloadMenu) {
             <WholeDownloadSelect
               formName={props.formName}
               placeholder="Select playlist quality"
-              selectOptions={wholeBooksOptionsForSelect()}
+              selectOptions={wholeBooksOptionsForSelect()!}
               onValueChange={(val: wholeBookPresets) =>
                 populateSwPayload({type: "BOOK", val})
               }
