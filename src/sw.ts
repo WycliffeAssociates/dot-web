@@ -6,16 +6,12 @@ import {registerRoute} from "workbox-routing";
 import {StaleWhileRevalidate, CacheFirst} from "workbox-strategies";
 import {CacheableResponsePlugin} from "workbox-cacheable-response";
 import {ExpirationPlugin} from "workbox-expiration";
-
-self.__WB_DISABLE_DEV_LOGS = true;
-
 import type {customVideoSources} from "@customTypes/types";
 declare const self: ServiceWorkerGlobalScope;
 
 self.skipWaiting();
 clientsClaim();
 cleanupOutdatedCaches();
-
 precacheAndRoute(self.__WB_MANIFEST);
 
 registerRoute(

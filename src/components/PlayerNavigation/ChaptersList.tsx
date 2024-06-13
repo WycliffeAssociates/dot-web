@@ -1,5 +1,5 @@
 import type {IVidWithCustom} from "@customTypes/types";
-import {Accessor, For, Show} from "solid-js";
+import {type Accessor, For, Show} from "solid-js";
 import {ChapterButton} from "./ChapterButton";
 import {currentBook} from "@lib/store";
 

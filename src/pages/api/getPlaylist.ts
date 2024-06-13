@@ -1,11 +1,10 @@
+import type {APIRoute} from "astro";
 import {playbackApi} from "@customTypes/Api";
-import type {cloudflareEnv} from "@customTypes/types";
 
-export const onRequestGet: PagesFunction = async (context) => {
-  const request: Request = context.request;
-  const env = context.env as cloudflareEnv & typeof context.env;
-
-  const url = new URL(request.url);
+export const GET: APIRoute = async (context) => {
+  const runtime = context.locals.runtime;
+  const env = runtime.env;
+  const url = context.url;
   const playlist = url.searchParams?.get("playlist") as string;
   const policyKey = env.POLICY_KEY;
   const accountId = env.ACCOUNT_ID;
@@ -19,16 +18,17 @@ export const onRequestGet: PagesFunction = async (context) => {
       },
     });
   }
-  const pbApi = new playbackApi({
-    baseUrl: "https://edge.api.brightcove.com/playback/v1",
-    baseApiParams: {
-      headers: {
-        Accept: `application/json;pk=${policyKey}`,
-      },
-    },
-  });
 
   try {
+    const pbApi = new playbackApi({
+      baseUrl: "https://edge.api.brightcove.com/playback/v1",
+      baseApiParams: {
+        headers: {
+          Accept: `application/json;pk=${policyKey}`,
+        },
+      },
+    });
+
     const res = await pbApi.accounts.getPlaylistsByIdOrReferenceId(
       accountId,
       `ref:${playlist}`,

@@ -4,7 +4,7 @@ export interface Props {
   initialDict: Record<string, string>;
   preferredLocale: string;
 }
-
+import {pwaInfo} from "virtual:pwa-info";
 import {Header} from "@components/Header";
 const {title} = Astro.props;
 import {getUserPreferences} from "@lib/utils";
@@ -13,19 +13,19 @@ import "@unocss/reset/tailwind.css";
 let userPreferences = getUserPreferences(Astro);
 
 // SETUP I18N
-const {initialDict, preferredLocale} = Astro.props;
+const {initialDict} = Astro.props;
 const initialPath = Astro.url.pathname;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html
   lang="en"
   class={`bg-base ${
     userPreferences?.prefersDark
       ? "dark"
       : userPreferences?.prefersDark === false
-      ? "light"
-      : ""
+        ? "light"
+        : ""
   }`}
 >
   <head>
@@ -56,6 +56,8 @@ const initialPath = Astro.url.pathname;
     <title>{title}</title>
     <link href="https://vjs.zencdn.net/8.0.4/video-js.css" rel="stylesheet" />
     <script src="/src/pwa.ts"></script>
+    <!-- PWA INFO HERE -->
+    {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
   </head>
   <body class="font-sans leading-relaxed bg-base text-surface pb-[54px]">
     <Header
@@ -71,6 +73,7 @@ const initialPath = Astro.url.pathname;
       import.meta.env.PROD && (
         <script
           defer
+          is:inline
           src="https://static.cloudflareinsights.com/beacon.min.js"
           data-cf-beacon='{"token": "89d66736f5cc483f80819161bfd67ead"}'
         />
@@ -82,6 +85,7 @@ const initialPath = Astro.url.pathname;
 
 <script>
   if (import.meta.env.PROD) {
+    // @ts-ignore
     const gtag: Gtag.Gtag = function () {
       window.dataLayer.push(arguments);
     };

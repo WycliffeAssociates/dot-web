@@ -17,7 +17,7 @@ export function DownloadRadio(props: IDownloadRadio) {
       class="radio-group"
       name={props.formName}
       defaultValue={props.defaultValue}
-      onValueChange={(val) => props.onValueChange(val)}
+      onChange={(val) => props.onValueChange(val)}
     >
       <RadioGroup.Label class="radio-group__label">
         {props.radioLabel}

@@ -2,10 +2,9 @@ import type {
   IVidWithCustom,
   envPropsForPlayer,
   i18nDict,
-  i18nDictWithLangCode,
   userPreferencesI,
 } from "@customTypes/types";
-import {For, Show, createMemo, createSignal, onMount} from "solid-js";
+import {For, Show, createSignal, onMount} from "solid-js";
 import * as i18n from "@solid-primitives/i18n";
 import {
   mobileHorizontalPadding,

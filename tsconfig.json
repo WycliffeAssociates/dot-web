@@ -1,5 +1,6 @@
 {
   "extends": "astro/tsconfigs/strict",
+  "exclude": ["dist", "public", "./functions"],
   "compilerOptions": {
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
@@ -10,8 +11,8 @@
       "astro/client",
       "@cloudflare/workers-types",
       "vite-plugin-pwa/client",
-      "@types/video.js",
-      "@types/gtag.js"
+      "vite-plugin-pwa/info",
+      "@types/video.js"
     ],
 
     "paths": {

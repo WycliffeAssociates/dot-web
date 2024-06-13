@@ -9,10 +9,10 @@ interface IDownloadSwitch {
 export function DownloadSwitch(props: IDownloadSwitch) {
   return (
     <Switch.Root
-      defaultIsChecked={props.defaultIsChecked}
+      defaultChecked={props.defaultIsChecked}
       name={props.formName}
       class="switch"
-      onCheckedChange={(val) => props.onCheckedChange(val)}
+      onChange={(val: boolean) => props.onCheckedChange(val)}
     >
       <Switch.Label class="switch__label">{props.switchLabel}</Switch.Label>
       <Switch.Input class="switch__input" />

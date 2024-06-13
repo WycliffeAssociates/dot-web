@@ -99,6 +99,7 @@ export function playerCustomHotKeys({
 }: playerCustomHotKeysParams) {
   const currentTime = vjsPlayer.currentTime();
   let uiJumpingTimeout: number | null = null;
+  if (!currentTime) return;
   switch (e.key) {
     case "ArrowLeft":
       vjsPlayer.currentTime(currentTime - increment);
@@ -119,7 +120,6 @@ export function playerCustomHotKeys({
       uiJumpingTimeout = window.setTimeout(() => {
         setJumpingForwardAmount(null);
       }, 250);
-      break;
       break;
     default:
       break;
@@ -256,13 +256,13 @@ Luc2:17-28
     .split("\n\n")
     .filter((segment) => segment.includes("-->"))
     .map((chapter) => {
+      const totalDur = plyr.duration();
       const parts = chapter.split("\n");
       const timeStamp = parts[0].split("-->");
       const startTime = convertTimeToSeconds(timeStamp[0]);
       const endTime = convertTimeToSeconds(timeStamp[1]);
-      const totalDur = plyr.duration();
       const labelMatches = parts[1].match(labelRegex);
-      const xPos = String((startTime / totalDur) * 100);
+      const xPos = String((startTime / totalDur!) * 100);
       return {
         chapterStart: startTime,
         chapterEnd: endTime,
@@ -541,7 +541,7 @@ export function handleProgressBarHover(event: Event) {
 
   const distance = seekBar.calculateDistance(event);
   const totalDur = player.duration();
-  const time = distance * totalDur;
+  const time = distance * totalDur!;
   const chapLabel = getChapterText(time);
   if (chapLabel && currentToolTip) {
     setCurrentChapLabel(chapLabel);
