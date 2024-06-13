@@ -24,13 +24,9 @@ export default defineConfig({
         type: "module",
         /* other options */
       },
-      // injectManifest: {
-      //   globIgnores: [
-      //     "**/node_modules/**/*",
-      //     "$server_build/*",
-      //     "$server_build/**/*",
-      //   ],
-      // },
+      injectManifest: {
+        globIgnores: ["**/_worker.js/**"],
+      },
     }),
   ],
   output: "server",
@@ -45,9 +41,9 @@ export default defineConfig({
     // build: {
     //   minify: false,
     // },
-    ssr: {
-      noExternal: ["@kobalte/core", "@internationalized/message"],
-    },
+    // ssr: {
+    //   noExternal: ["@kobalte/core", "@internationalized/message"],
+    // },
     plugins: [
       visualizer({
         // goal:  ~100kib of HTML/CSS/Fonts (e.g. check network tab for amount loaded), and then ~300-350kib JS gzipped:
