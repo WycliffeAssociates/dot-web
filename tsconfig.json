@@ -11,6 +11,7 @@
       "astro/client",
       "@cloudflare/workers-types",
       "vite-plugin-pwa/client",
+      "vite-plugin-pwa/info",
       "@types/video.js"
     ],
 
