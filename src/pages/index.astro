@@ -16,7 +16,7 @@ import config from "@src/domainConfig.ts";
 
 let originToMatch = import.meta.env.PROD ? Astro.url.origin : "tanzania";
 if (
-  originToMatch.includes("dot-web.pages.dev") ||
+  originToMatch.includes(".pages.dev") ||
   originToMatch.includes("127.0.0.1") ||
   originToMatch.includes("localhost")
 ) {

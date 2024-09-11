@@ -266,7 +266,7 @@ export function VidPlayer(props: IVidPlayerProps) {
       <div
         ref={playerRefContainer}
         data-title="VideoPlayer"
-        class="w-full mx-auto aspect-12/9 sm:aspect-video  relative  sm:(rounded-lg overflow-hidden)"
+        class="w-full mx-auto aspect-video  relative  sm:(rounded-lg overflow-hidden)"
       >
         {/* Chapter Back */}
         <button
