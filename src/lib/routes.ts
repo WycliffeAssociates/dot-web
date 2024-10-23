@@ -1,6 +1,6 @@
 import type {PlaylistResponse} from "@customTypes/Api";
 
-export const DOWNLOAD_SERVICE_WORK_URL = "sw-handle-saving";
+export const DOWNLOAD_SERVICE_WORK_URL = "download-video";
 
 export async function getPlaylistData(origin: string, playlist: string) {
   try {

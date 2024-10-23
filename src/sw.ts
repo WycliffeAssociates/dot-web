@@ -37,6 +37,7 @@ registerRoute(
     ],
   })
 );
+
 // static assets
 registerRoute(
   ({url, sameOrigin, request}) => {
@@ -100,6 +101,67 @@ registerRoute(
   })
 );
 
+// Download Videos
+registerRoute(
+  ({url, sameOrigin}) => {
+    const isVidSingleDownload = url.href.includes("download-video");
+    return isVidSingleDownload && sameOrigin;
+  },
+  async ({request}) => {
+    const formData = await request.text();
+    if (!formData)
+      return new Response(null, {
+        status: 400,
+        statusText: "missing parameters",
+      });
+    const parameterized = new URLSearchParams(formData);
+    const stringPayload = parameterized.get("swPayload");
+    if (!stringPayload)
+      return new Response(null, {
+        status: 400,
+        statusText: "missing parameters",
+      });
+
+    let payloadData: customVideoSources[];
+    const downloadToDevice = parameterized.get("swDownloadDevice") == "true";
+    /* String, not boolean compare.  url encoded is sending strings */
+    const saveToSw = parameterized.get("swSaveSw") == "true";
+    if (!saveToSw && !downloadToDevice) {
+      return new Response(null, {
+        status: 400,
+        statusText: "missing parameters",
+      });
+    }
+    try {
+      payloadData = await JSON.parse(stringPayload);
+    } catch (error) {
+      console.error(error);
+      return new Response(null, {
+        status: 400,
+        statusText: "malformed payload",
+      });
+    }
+    const totalSize = payloadData.reduce((sum, current) => {
+      if (!current.size) return sum;
+      sum += current.size;
+      return sum;
+    }, 0);
+    const fileName = payloadData[0].name;
+    const response = await fetch(payloadData[0].src);
+    if (response.ok) {
+      return new Response(response.body, {
+        headers: {
+          "Content-Type": "application/octet-stream; charset=utf-8",
+          "Content-Disposition": `attachment; filename=${fileName}.mp4`,
+          "Content-Length": String(totalSize),
+        },
+      });
+    } else {
+      return new Response(null, {status: 200, statusText: "ok"});
+    }
+  },
+  "POST"
+);
 // downloads
 self.addEventListener("fetch", async (event) => {
   if (event.request.url.match(/sw-handle-saving/)) {
