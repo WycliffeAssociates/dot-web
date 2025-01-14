@@ -96,6 +96,9 @@ importers:
       vite-plugin-pwa:
         specifier: ^0.21.1
         version: 0.21.1(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(terser@5.37.0)(tsx@4.19.2)(yaml@2.7.0))(workbox-build@7.1.1(@types/babel__core@7.20.5))(workbox-window@7.3.0)
+      workbox-cacheable-response:
+        specifier: ^7.3.0
+        version: 7.3.0
       workbox-core:
         specifier: ^7.3.0
         version: 7.3.0
@@ -5085,6 +5088,9 @@ packages:
 
   workbox-cacheable-response@7.1.0:
     resolution: {integrity: sha512-iwsLBll8Hvua3xCuBB9h92+/e0wdsmSVgR2ZlvcfjepZWwhd3osumQB3x9o7flj+FehtWM2VHbZn8UJeBXXo6Q==}
+
+  workbox-cacheable-response@7.3.0:
+    resolution: {integrity: sha512-eAFERIg6J2LuyELhLlmeRcJFa5e16Mj8kL2yCDbhWE+HUun9skRQrGIFVUagqWj4DMaaPSMWfAolM7XZZxNmxA==}
 
   workbox-core@7.1.0:
     resolution: {integrity: sha512-5KB4KOY8rtL31nEF7BfvU7FMzKT4B5TkbYa2tzkS+Peqj0gayMT9SytSFtNzlrvMaWgv6y/yvP9C0IbpFjV30Q==}
@@ -11450,6 +11456,10 @@ snapshots:
   workbox-cacheable-response@7.1.0:
     dependencies:
       workbox-core: 7.1.0
+
+  workbox-cacheable-response@7.3.0:
+    dependencies:
+      workbox-core: 7.3.0
 
   workbox-core@7.1.0: {}
 
