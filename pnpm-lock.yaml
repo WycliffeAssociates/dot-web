@@ -102,6 +102,9 @@ importers:
       workbox-expiration:
         specifier: ^7.3.0
         version: 7.3.0
+      workbox-precaching:
+        specifier: ^7.3.0
+        version: 7.3.0
       workbox-routing:
         specifier: ^7.3.0
         version: 7.3.0
@@ -5103,6 +5106,9 @@ packages:
 
   workbox-precaching@7.1.0:
     resolution: {integrity: sha512-LyxzQts+UEpgtmfnolo0hHdNjoB7EoRWcF7EDslt+lQGd0lW4iTvvSe3v5JiIckQSB5KTW5xiCqjFviRKPj1zA==}
+
+  workbox-precaching@7.3.0:
+    resolution: {integrity: sha512-ckp/3t0msgXclVAYaNndAGeAoWQUv7Rwc4fdhWL69CCAb2UHo3Cef0KIUctqfQj1p8h6aGyz3w8Cy3Ihq9OmIw==}
 
   workbox-range-requests@7.1.0:
     resolution: {integrity: sha512-m7+O4EHolNs5yb/79CrnwPR/g/PRzMFYEdo01LqwixVnc/sbzNSvKz0d04OE3aMRel1CwAAZQheRsqGDwATgPQ==}
@@ -11475,6 +11481,12 @@ snapshots:
       workbox-core: 7.1.0
       workbox-routing: 7.1.0
       workbox-strategies: 7.1.0
+
+  workbox-precaching@7.3.0:
+    dependencies:
+      workbox-core: 7.3.0
+      workbox-routing: 7.3.0
+      workbox-strategies: 7.3.0
 
   workbox-range-requests@7.1.0:
     dependencies:
