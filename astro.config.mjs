@@ -50,17 +50,5 @@ export default defineConfig({
         gzipSize: true,
       }),
     ],
-    // https://discord.com/channels/830184174198718474/1239920931510554655/1249724228794585178
-    /* 
-    For anyone that might land here in the future, due to the hydration being broken in Solid it creates an unfortunate situation with an easy workaround, at least until it gets fixed in core:
-
-In local development everytinhg will work fine by default but it won't build with the problem I described in the post, by applying a manual resolver to vite it will break the development server  but the production build will work just fine, so in order to have both, in your astro.config.mjs:
-
-last checked: June 13, 2024
-    */
-    resolve: {
-      conditions: !isDev ? ["worker", "webworker"] : [],
-      mainFields: !isDev ? ["module"] : [],
-    },
   },
 });

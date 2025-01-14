@@ -28,5 +28,13 @@ const config: Record<string, Record<string, string>> = {
     playlist: "tanzania-new-testament",
     license: "tanzania.md",
   },
+  drcfrench: {
+    playlist: "congo-french-nt",
+    license: "congoFrench.md",
+  },
+  marathi: {
+    playlist: "marathi-nt",
+    license: "marathi",
+  },
 };
 export default config;
