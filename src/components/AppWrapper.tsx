@@ -10,6 +10,7 @@ interface IAppWrapperProps {
   initialDict: Record<string, string>;
   vids: Record<string | number | symbol, IVidWithCustom[]>;
   playlist: string | undefined;
+  playlistDisplayName: string | undefined;
   initialData: {
     vids: IVidWithCustom[];
     chap: IVidWithCustom;
@@ -24,6 +25,7 @@ export function AppWrapper(props: IAppWrapperProps) {
     <VidPlayer
       initialData={props.initialData}
       playlist={props.playlist}
+      playlistDisplayName={props.playlistDisplayName}
       userPreferences={props.userPreferences}
       vids={props.vids}
       videojsInitalDict={props.videojsInitalDict}

@@ -49,12 +49,7 @@ export function upperFirstLowerRest(bookName: string) {
     .slice(1)
     .toLowerCase()}`;
 }
-export function formatPlayListName(playlist: string | undefined) {
-  if (!playlist) return "";
-  const parts = playlist.split("-");
-  const cased = parts.map((part) => upperFirstLowerRest(part));
-  return cased.join(" ");
-}
+
 export function convertTimeToSeconds(timeStr: string): number {
   const [mins, secs] = timeStr.split(":").map(Number);
   const milliseconds = Number(timeStr.split(".")[1]);

@@ -54,11 +54,12 @@ import {PLAYER_LOADER_OPTIONS} from "src/constants";
 import {DOWNLOAD_SERVICE_WORK_URL} from "@lib/routes";
 import {throttle} from "@solid-primitives/scheduled";
 import {createResizeObserver} from "@solid-primitives/resize-observer";
-import {normalizeBookName, formatPlayListName} from "@utils";
+import {normalizeBookName} from "@utils";
 
 interface IVidPlayerProps {
   vids: Record<string | number | symbol, IVidWithCustom[]>;
   playlist: string | undefined;
+  playlistDisplayName: string | undefined;
   initialData: {
     vids: IVidWithCustom[];
     chap: IVidWithCustom;
@@ -422,7 +423,7 @@ export function VidPlayer(props: IVidPlayerProps) {
               currentVid?.localizedBookName || currentVid.book
             )}
           </h1>
-          <p>{formatPlayListName(props.playlist)}</p>
+          <p>{props.playlistDisplayName}</p>
         </div>
       </div>
       <div
