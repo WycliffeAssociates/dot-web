@@ -28,7 +28,7 @@ let matchingKey = Object.keys(config).find((key) =>
 if (!matchingKey || !config[matchingKey]) return Astro.redirect("404");
 const configObj = config[matchingKey];
 const playlist = configObj.playlist;
-const playlistDisplayName = configObj.playlistDisplayName;
+const playlistDisplayName = configObj.displayName;
 const {bookChap} = Astro.params;
 
 if (!playlist) return Astro.redirect("404");
