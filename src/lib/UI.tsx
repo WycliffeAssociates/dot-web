@@ -214,19 +214,32 @@ export async function fetchRemoteChaptersFile(src: string) {
   }
 }
 function distributeChapterMarkers(markers: chapterMarkers) {
+  // debugger;
   const plyr = vjsPlayer();
-  if (!plyr) return;
+  if (!plyr || import.meta.env.SRR) return;
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore  - controlBar does exist.  Typings are wrong
   const sb = plyr.controlBar?.progressControl?.seekBar?.el();
   markers.forEach((marker) => {
-    const chapMarker = <ChapterMarker leftAmt={marker.xPos} />;
-    sb.appendChild(chapMarker);
+    // debugger;
+    let span = document.createElement("span");
+    span.dataset.role = "chapterMarker";
+    span.classList.add(
+      "w-1",
+      "h-full",
+      "inline-block",
+      "bg-primary",
+      "absolute"
+    );
+    span.style.left = `${marker.xPos}%`;
+    // const chapMarker = <ChapterMarker leftAmt={marker.xPos} />;
+    sb.appendChild(span);
   });
 }
 
 export async function getChaptersArrFromVtt(vid: IVidWithCustom) {
   cleanUpOldChapters();
+  // debugger;
   const chapterObj = vid.text_tracks?.find((tt) => tt.kind === "chapters");
   if (!chapterObj || !chapterObj.src || !chapterObj.sources) {
     setCurrentVid("chapterMarkers", []);
@@ -258,10 +271,14 @@ Luc2:17-28
     .map((chapter) => {
       const totalDur = plyr.duration();
       const parts = chapter.split("\n");
-      const timeStamp = parts[0].split("-->");
+      const timeStamp = parts
+        .find((line) => line.includes("-->"))!
+        .split("-->");
       const startTime = convertTimeToSeconds(timeStamp[0]);
       const endTime = convertTimeToSeconds(timeStamp[1]);
-      const labelMatches = parts[1].match(labelRegex);
+      const labelMatches = parts
+        .find((p) => labelRegex.test(p))!
+        .match(labelRegex);
       const xPos = String((startTime / totalDur!) * 100);
       return {
         chapterStart: startTime,
@@ -274,6 +291,7 @@ Luc2:17-28
     });
 
   setCurrentVid("chapterMarkers", vttChapsArray);
+  // debugger;
   return vttChapsArray;
 }
 export async function handleChapters(vid: IVidWithCustom) {
