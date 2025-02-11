@@ -54,7 +54,7 @@ export function Header(props: HeaderProps) {
       <header
         class={`${mobileHorizontalPadding} py-2 flex justify-between items-center relative`}
       >
-        <span class="w-32">
+        <span class="w-32 md:w-48">
           <DotLogo />
         </span>
         <div class="flex gap-2">
