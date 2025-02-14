@@ -77,6 +77,15 @@ const initialPath = Astro.url.pathname;
   </body>
 </html>
 
+{
+  import.meta.env.PROD && (
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-5HN2P1BPRC"
+    />
+  )
+}
+
 <script>
   if (import.meta.env.PROD) {
     // @ts-ignore
