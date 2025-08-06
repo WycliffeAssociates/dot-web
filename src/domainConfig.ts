@@ -40,10 +40,10 @@ const config: Record<string, Record<string, string>> = {
     license: "congoFrench.md",
     displayName: "Democratic Republic of Congo (French) New Testament",
   },
-  bukavu: {
+  drcswahili: {
     playlist: "ase-x-bukavusl",
     license: "bukavu.md",
-    displayName: "Democratic Republic of Congo (Bukavu) New Testament",
+    displayName: "Democratic Republic of Congo (Swahili) New Testament",
   },
   marathi: {
     playlist: "marathi-nt",
