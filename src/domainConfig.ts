@@ -38,12 +38,17 @@ const config: Record<string, Record<string, string>> = {
   drcfrench: {
     playlist: "congo-french-nt",
     license: "congoFrench.md",
-    displayName: "DRC French New Testament",
+    displayName: "Democratic Republic of Congo (French) New Testament",
+  },
+  bukavu: {
+    playlist: "ase-x-bukavusl",
+    license: "bukavu.md",
+    displayName: "Democratic Republic of Congo (Bukavu) New Testament",
   },
   marathi: {
     playlist: "marathi-nt",
-    license: "marathi",
     displayName: "Marathi New Testament",
+    license: "marathi.md",
   },
 } as const;
 export default config;

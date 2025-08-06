@@ -13,13 +13,13 @@ import {getPlaylistData} from "@lib/routes";
 // FIGURE OUT WHICH PLAYLIST TO LOAD BASED ON DOMAIN
 import config from "src/domainConfig.ts";
 
-let originToMatch = import.meta.env.PROD ? Astro.url.origin : "tanzania";
+let originToMatch = import.meta.env.PROD ? Astro.url.origin : "bukavu";
 if (
   originToMatch.includes("dot-web.pages.dev") ||
   originToMatch.includes("127.0.0.1") ||
   originToMatch.includes("localhost")
 ) {
-  originToMatch = "cote";
+  originToMatch = "bukavu";
 }
 
 let matchingKey = Object.keys(config).find((key) =>
