@@ -50,5 +50,10 @@ const config: Record<string, Record<string, string>> = {
     displayName: "Marathi New Testament",
     license: "marathi.md",
   },
+  brazil: {
+    playlist: "brazil-nt",
+    displayName: "Brazil New Testament",
+    license: "brazil.md",
+  },
 } as const;
 export default config;

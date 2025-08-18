@@ -1,4 +1,4 @@
-Tafsiri ya Biblia katika Lugha ya Ishara ya Kiswahili
+# Tafsiri ya Biblia katika Lugha ya Ishara ya Kiswahili
 
 ©2025 Biblia katika Kila Jumuiya ya Misheni ya Lugha
 Imetolewa chini ya Creative Commons Attribution-Shiriki Sawa 4.0 Leseni ya Kimataifa.
