@@ -1,7 +1,5 @@
 # Congolese French Sign Language 
 
-License in French is Licence 
-
 Republique Democratique du Congo. La Traduction de la Bible en Langue des signes. 
 
 © 2025 La Bible dans toutes les langues Communauté de Missions. 
