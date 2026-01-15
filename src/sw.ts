@@ -1,18 +1,27 @@
-import {clientsClaim} from "workbox-core";
+import type {customVideoSources} from "@customTypes/types";
 import {downloadZip} from "client-zip";
-import {SW_CACHE_NAME} from "./constants";
+import {CacheableResponsePlugin} from "workbox-cacheable-response";
+import {clientsClaim} from "workbox-core";
+import {ExpirationPlugin} from "workbox-expiration";
 import {cleanupOutdatedCaches, precacheAndRoute} from "workbox-precaching";
 import {registerRoute} from "workbox-routing";
-import {StaleWhileRevalidate, CacheFirst} from "workbox-strategies";
-import {CacheableResponsePlugin} from "workbox-cacheable-response";
-import {ExpirationPlugin} from "workbox-expiration";
-import type {customVideoSources} from "@customTypes/types";
+import {CacheFirst, StaleWhileRevalidate} from "workbox-strategies";
+import {SW_CACHE_NAME} from "./constants";
+
 declare const self: ServiceWorkerGlobalScope;
 
+// Force immediate activation
 self.skipWaiting();
 clientsClaim();
 cleanupOutdatedCaches();
+
+// Explicit listeners to ensure activation happens immediately
+self.addEventListener("install", () => void self.skipWaiting());
+self.addEventListener("activate", () => void self.clients.claim());
+
 precacheAndRoute(self.__WB_MANIFEST);
+
+// --- ASSET ROUTES ---
 
 registerRoute(
   ({url}) => {
@@ -26,7 +35,6 @@ registerRoute(
       console.log("vidjs file acknowledged from the service worker!");
     }
     return isForVidJs;
-    // return false;
   },
   new StaleWhileRevalidate({
     cacheName: "dot-assets",
@@ -58,7 +66,8 @@ registerRoute(
     ],
   })
 );
-// cdn  images
+
+// cdn images
 registerRoute(
   ({url}) => {
     const vidPosterRegex = /akamaihd.net\/image/;
@@ -83,7 +92,6 @@ registerRoute(
 registerRoute(
   ({request}) => {
     if (request.mode == "navigate") {
-      console.log("dot-html cache hit");
       return true;
     }
   },
@@ -101,9 +109,11 @@ registerRoute(
   })
 );
 
-// Download Videos
+// --- DOWNLOAD ROUTE ---
+
 registerRoute(
   ({url, sameOrigin}) => {
+    // Matches "download-video" which is set in constants/routes
     const isVidSingleDownload = url.href.includes("download-video");
     return isVidSingleDownload && sameOrigin;
   },
@@ -114,6 +124,7 @@ registerRoute(
         status: 400,
         statusText: "missing parameters",
       });
+
     const parameterized = new URLSearchParams(formData);
     const stringPayload = parameterized.get("swPayload");
     if (!stringPayload)
@@ -124,14 +135,15 @@ registerRoute(
 
     let payloadData: customVideoSources[];
     const downloadToDevice = parameterized.get("swDownloadDevice") == "true";
-    /* String, not boolean compare.  url encoded is sending strings */
     const saveToSw = parameterized.get("swSaveSw") == "true";
+
     if (!saveToSw && !downloadToDevice) {
       return new Response(null, {
         status: 400,
         statusText: "missing parameters",
       });
     }
+
     try {
       payloadData = await JSON.parse(stringPayload);
     } catch (error) {
@@ -141,149 +153,128 @@ registerRoute(
         statusText: "malformed payload",
       });
     }
-    const totalSize = payloadData.reduce((sum, current) => {
-      if (!current.size) return sum;
-      sum += current.size;
-      return sum;
-    }, 0);
-    const fileName = payloadData[0].name;
-    const response = await fetch(payloadData[0].src);
-    if (response.ok) {
-      return new Response(response.body, {
+
+    // Helper to save stream to Cache API
+    async function sendItToSw(
+      name: string,
+      stream: ReadableStream<Uint8Array>,
+      originalResp: Response
+    ) {
+      const testCache = await caches.open(SW_CACHE_NAME);
+      const res = new Response(stream, {
         headers: {
-          "Content-Type": "application/octet-stream; charset=utf-8",
-          "Content-Disposition": `attachment; filename=${fileName}.mp4`,
-          "Content-Length": String(totalSize),
+          "Content-Length": originalResp.headers.get("Content-Length") || "",
+          "Content-Type": "video/mp4",
         },
       });
-    } else {
-      return new Response(null, {status: 200, statusText: "ok"});
+      // Brightcove references are usually numbers/IDs
+      await testCache.put(`/${name}`, res);
     }
-  },
-  "POST"
-);
-// downloads
-self.addEventListener("fetch", async (event) => {
-  if (event.request.url.match(/sw-handle-saving/)) {
-    async function handleFormRequest() {
-      const formData = await event.request.text();
-      if (!formData)
-        return new Response(null, {
-          status: 400,
-          statusText: "missing parameters",
-        });
-      const parameterized = new URLSearchParams(formData);
-      const stringPayload = parameterized.get("swPayload");
-      if (!stringPayload)
-        return new Response(null, {
-          status: 400,
-          statusText: "missing parameters",
-        });
 
-      let payloadData: customVideoSources[];
-      const downloadToDevice = parameterized.get("swDownloadDevice") == "true";
-      /* String, not boolean compare.  url encoded is sending strings */
-      const saveToSw = parameterized.get("swSaveSw") == "true";
-      if (!saveToSw && !downloadToDevice) {
-        return new Response(null, {
-          status: 400,
-          statusText: "missing parameters",
+    // SCENARIO 1: Single File (Direct Stream)
+    if (payloadData.length === 1) {
+      const srcObj = payloadData[0];
+      const fileName = `${srcObj.name}.mp4`;
+      const response = await fetch(srcObj.src);
+
+      if (!response.ok) {
+        return new Response(null, {status: response.status});
+      }
+
+      let bodyToReturn = response.body;
+      if (!bodyToReturn) return new Response(null, {status: 500});
+
+      if (saveToSw && srcObj.refId) {
+        // Tee the stream: one to cache, one to user
+        const [readableDownload, readableSw] = bodyToReturn.tee();
+        bodyToReturn = readableDownload;
+        // Don't await this, let it run in background
+        sendItToSw(srcObj.refId, readableSw, response);
+      }
+
+      if (downloadToDevice) {
+        return new Response(bodyToReturn, {
+          headers: {
+            "Content-Type": "application/octet-stream; charset=utf-8",
+            "Content-Disposition": `attachment; filename=${fileName}`,
+            "Content-Length": response.headers.get("Content-Length") || "",
+          },
+        });
+      } else {
+        // Just saving to SW, return success
+        return new Response(JSON.stringify({saved: true}), {
+          headers: {"Content-Type": "application/json"},
         });
       }
-      try {
-        payloadData = await JSON.parse(stringPayload);
-      } catch (error) {
-        console.error(error);
-        return new Response(null, {
-          status: 400,
-          statusText: "malformed payload",
-        });
-      }
+    }
+
+    // SCENARIO 2: Multiple Files (Zip Stream)
+    else {
       const totalSize = payloadData.reduce((sum, current) => {
         if (!current.size) return sum;
         sum += current.size;
         return sum;
       }, 0);
-      const fileName = payloadData[0].name;
+      const fileName = `${payloadData[0].name}-playlist`; // Or use book name if available
 
-      // const fetchPromises = arrUrls.map((url) => {
-      //   return fetch(url);
-      // });
       async function* lazyFetch() {
         for (const srcObj of payloadData) {
           try {
             const resp = await fetch(srcObj.src);
             const body = resp.body;
-            if (!resp.ok || !body) return;
+            if (!resp.ok || !body) continue;
+
             if (downloadToDevice && saveToSw) {
               const [readableDownload, readableSw] = body.tee();
               if (srcObj.refId) {
                 sendItToSw(srcObj.refId, readableSw, resp);
               }
-              const data = {
+              yield {
                 name: `${srcObj.name}.mp4`,
                 input: readableDownload,
-                lastModified: resp.headers.get("last-modified"),
+                lastModified: new Date(),
               };
-              yield data;
             } else if (downloadToDevice) {
-              const data = {
+              yield {
                 name: `${srcObj.name}.mp4`,
-                input: resp.body,
-                lastModified: resp.headers.get("last-modified"),
+                input: body,
+                lastModified: new Date(),
               };
-              yield data;
+            } else if (saveToSw && srcObj.refId) {
+              // Just saving, consume the body into cache
+              await sendItToSw(srcObj.refId, body, resp);
             }
           } catch (error) {
             console.error(error);
           }
         }
       }
-      async function sendItToSw(
-        name: string,
-        stream: ReadableStream<Uint8Array>,
-        originalResp: Response
-      ) {
-        const testCache = await caches.open(SW_CACHE_NAME);
-        const res = new Response(stream, {
-          headers: {
-            "Content-Length": originalResp.headers.get("Content-Length") || "",
-            "Content-Type": "video/mp4",
-          },
-        });
-        testCache.put(name, res);
-      }
-      const {readable, writable} = new TransformStream();
-      const response = downloadZip(lazyFetch());
-      response.body?.pipeTo(writable);
+
       if (downloadToDevice) {
+        const {readable, writable} = new TransformStream();
+        // client-zip takes the generator
+        const response = downloadZip(lazyFetch());
+        response.body?.pipeTo(writable);
+
         return new Response(readable, {
           headers: {
-            "Content-Type": "application/octet-stream; charset=utf-8",
-            "Content-Disposition": `attachment; filename=${fileName}.mp4`,
-            "Content-Length": String(totalSize),
+            "Content-Type": "application/zip",
+            "Content-Disposition": `attachment; filename=${fileName}.zip`,
+            // Size is approximate or unknown for streamed zip usually, unless calculated
           },
         });
       } else {
-        // SW only
-        return new Response(readable, {
-          headers: {
-            "Content-Type": "application/json",
-            "Content-Length": String(totalSize),
-          },
+        // Execute the generator just to cache files
+        const generator = lazyFetch();
+        let result = await generator.next();
+        while (!result.done) {
+          result = await generator.next();
+        }
+        return new Response(JSON.stringify({saved: true}), {
+          headers: {"Content-Type": "application/json"},
         });
       }
     }
-    return event.respondWith(handleFormRequest());
-  }
-});
-
-/* 
-1,732,142,781
-1,370,627,409
-31557600
-https://bcbolt446c5271-a.akamaihd.net/image/v1/jit/6314154063001/52653555-8ec6-43b1-aa54-03ee1fea3e41/main/480x270/5s/match/image.jpeg?akamai_token=exp=1732142781~acl=/image/v1/jit/6314154063001/52653555-8ec6-43b1-aa54-03ee1fea3e41/main/480x270/5s/match/image.jpeg*~hmac=77547b62f7758466099649eaebc481e6c41f11265465c670be2de3cb3a3ab320
-
-
-https://bcbolt446c5271-a.akamaihd.net/image/v1/jit/6314154063001/52653555-8ec6-43b1-aa54-03ee1fea3e41/main/480x270/5s/match/image.jpeg?akamai_token=exp=1732142781~acl=/image/v1/jit/6314154063001/52653555-8ec6-43b1-aa54-03ee1fea3e41/main/480x270/5s/match/image.jpeg*~hmac=77547b62f7758466099649eaebc481e6c41f11265465c670be2de3cb3a3ab320
-*/
+  },
+  "POST"
+);

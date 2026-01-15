@@ -21,6 +21,7 @@ export function DownloadMenu(props: IDownloadMenu) {
   return (
     <>
       <form
+        data-testid="download-form"
         action="/"
         name="downloadData"
         id="downloadDataForm"

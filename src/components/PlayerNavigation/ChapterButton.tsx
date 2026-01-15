@@ -9,6 +9,7 @@ interface IChapterButton {
 export function ChapterButton(props: IChapterButton) {
   return (
     <button
+      data-testid={`chapter-button-${props.vid.chapter}`}
       onClick={() => {
         props.onClick(props.vid);
         updateHistory(props.vid, "PUSH");

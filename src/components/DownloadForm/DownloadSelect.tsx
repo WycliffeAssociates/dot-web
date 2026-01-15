@@ -21,6 +21,7 @@ export function WholeDownloadSelect(props: IWholeBookSelect) {
   return (
     <Show when={props.selectOptions}>
       <Select
+        data-testid="download-quality-whole-book"
         // name="downloads"
         name={props.formName}
         flip={false}
@@ -28,7 +29,7 @@ export function WholeDownloadSelect(props: IWholeBookSelect) {
         options={props.selectOptions}
         onChange={(val) => {
           // const coerced = val as wholeBookPresets;
-          props.onValueChange(val.size as wholeBookPresets);
+          props.onValueChange(val?.size as wholeBookPresets);
         }}
         optionValue={(val) => val.wholeBooksOptionsForSelectId}
         optionTextValue={(val) => `${val.size}`}
@@ -89,15 +90,16 @@ export function SingleDownloadSelect(props: ISingleVidSelect) {
   return (
     <Show when={props.selectOptions}>
       <Select<OptionGeneric>
+        data-testid="download-quality-single-video"
         // name="downloads"
         name={props.formName}
         flip={false}
         hideWhenDetached={true}
         options={props.selectOptions}
         defaultValue={props.selectOptions[0]}
-        onChange={(val) => props.onValueChange(String(val.size))}
+        onChange={(val) => props.onValueChange(String(val?.size))}
         optionValue={(val) => String(val.size)}
-        optionTextValue={(val) => `${String(bytesToMb(val.size))}`}
+        optionTextValue={(val) => `${String(bytesToMb(val?.size))}`}
         placeholder={props.placeholder}
         optionDisabled={() => false}
         itemComponent={(opt) => (

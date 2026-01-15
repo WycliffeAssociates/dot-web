@@ -1,9 +1,10 @@
-import {defineConfig} from "astro/config";
-import UnoCSS from "unocss/astro";
-import solidJs from "@astrojs/solid-js";
 import cloudflare from "@astrojs/cloudflare";
+import solidJs from "@astrojs/solid-js";
 import AstroPWA from "@vite-pwa/astro";
+import {defineConfig} from "astro/config";
 import {visualizer} from "rollup-plugin-visualizer";
+import UnoCSS from "unocss/astro";
+
 const isDev = import.meta.env.DEV;
 // https://astro.build/config
 export default defineConfig({
@@ -12,7 +13,7 @@ export default defineConfig({
     solidJs(),
     AstroPWA({
       workbox: {
-        disableDevLogs: true,
+        disableDevLogs: false,
       },
       srcDir: "src",
       filename: "sw.ts",
@@ -20,7 +21,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       // manifest: {},
       devOptions: {
-        enabled: false,
+        enabled: true,
         type: "module",
         /* other options */
       },

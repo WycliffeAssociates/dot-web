@@ -14,6 +14,7 @@ interface IDownloadRadio {
 export function DownloadRadio(props: IDownloadRadio) {
   return (
     <RadioGroup.Root
+      data-testid="download-scope-radio-group"
       class="radio-group"
       name={props.formName}
       defaultValue={props.defaultValue}
@@ -25,7 +26,7 @@ export function DownloadRadio(props: IDownloadRadio) {
       <div class="">
         <For each={props.radioOptions}>
           {(opt) => (
-            <RadioGroup.Item value={opt.value} class="flex gap-2">
+            <RadioGroup.Item data-testid={`download-scope-${opt.value}`} value={opt.value} class="flex gap-2">
               <RadioGroup.ItemInput class="radio__input" />
               <RadioGroup.ItemControl class="w-6 h-6 rounded-full bg-surface/20 grid place-content-center relative p-2">
                 <RadioGroup.ItemIndicator class="absolute w-3/5 h-3/5 inset-20% rounded-full block bg-primary" />

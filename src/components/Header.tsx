@@ -54,11 +54,12 @@ export function Header(props: HeaderProps) {
       <header
         class={`${mobileHorizontalPadding} py-2 flex justify-between items-center relative`}
       >
-        <span class="w-32 md:w-48">
+        <span data-testid="header-logo" class="w-32 md:w-48">
           <DotLogo />
         </span>
         <div class="flex gap-2">
           <ToggleButton.Root
+            data-testid="header-theme-toggle"
             class="toggle-button"
             aria-label="Light Mode or Dark Mode"
             pressed={prefersDark()}
@@ -72,6 +73,7 @@ export function Header(props: HeaderProps) {
           </ToggleButton.Root>
 
           <ToggleButton.Root
+            data-testid="header-menu-toggle"
             pressed={menuIsOpen()}
             onChange={() => setMenuIsOpen(!menuIsOpen())}
           >
@@ -93,6 +95,7 @@ export function Header(props: HeaderProps) {
           }`}
         >
           <button
+            data-testid="header-menu-close"
             class="block ml-auto text-4xl hover:(text-primary) focus:(text-primary) transform active:(scale-95)"
             onClick={() => setMenuIsOpen(!menuIsOpen())}
           >

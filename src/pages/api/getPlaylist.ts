@@ -1,5 +1,5 @@
-import type {APIRoute} from "astro";
 import {playbackApi} from "@customTypes/Api";
+import type {APIRoute} from "astro";
 
 export const GET: APIRoute = async (context) => {
   const runtime = context.locals.runtime;

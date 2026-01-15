@@ -25,3 +25,10 @@ stats.html
 /functions/\[\[path\]\].js
 will-notes.md
 .wrangler
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
