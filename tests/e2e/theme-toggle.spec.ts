@@ -1,7 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { toggleTheme, verifyTheme, waitForVideoPlayer } from '../fixtures/test-helpers';
 
-test.describe.skip('Theme Toggle Tests', () => {
+test.describe('Theme Toggle Tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await waitForVideoPlayer(page);

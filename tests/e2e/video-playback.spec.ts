@@ -1,9 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { 
-  waitForVideoPlayer, 
-  waitForVideoLoad,
   navigateToBook, 
-  navigateToChapter 
+  navigateToChapter, 
+  waitForVideoLoad,
+  waitForVideoPlayer 
 } from '../fixtures/test-helpers';
 
 test.describe('Video Functionality Tests', () => {
@@ -13,7 +13,7 @@ test.describe('Video Functionality Tests', () => {
   });
 
   test('video player loads and initializes correctly', async ({ page }) => {
-    const playerContainer = page.getByTestId('video-player-container');
+    const playerContainer = page.locator('[data-title="VideoPlayer"]');
 
     // Verify player is visible
     await expect(playerContainer).toBeVisible();
@@ -78,7 +78,7 @@ test.describe('Video Functionality Tests', () => {
   });
 
   test('speed control slider functionality', async ({ page }) => {
-    const speedControl = page.getByTestId('video-player-speed-control');
+    const speedControl = page.locator('.speedRange');
 
     // Verify speed control is visible
     await expect(speedControl).toBeVisible();
@@ -104,7 +104,12 @@ test.describe('Video Functionality Tests', () => {
   });
 
   test('video controls are accessible', async ({ page }) => {
-    const speedControl = page.getByTestId('video-player-speed-control');
+    await waitForVideoLoad(page);
+    
+    const speedControl = page.locator('.speedRange');
+
+    // Wait for speed control to be visible before focusing
+    await expect(speedControl).toBeVisible();
 
     // Test keyboard navigation to speed control
     await speedControl.focus();
@@ -120,7 +125,7 @@ test.describe('Video Functionality Tests', () => {
     await page.setViewportSize({ width: 1200, height: 800 });
     await waitForVideoLoad(page);
     
-    const playerContainer = page.getByTestId('video-player-container');
+    const playerContainer = page.locator('[data-title="VideoPlayer"]');
     await expect(playerContainer).toBeVisible();
     
     // Test mobile size
@@ -134,7 +139,7 @@ test.describe('Video Functionality Tests', () => {
 
   test('video player maintains state during navigation', async ({ page }) => {
     // Set speed to 1.5
-    const speedControl = page.getByTestId('video-player-speed-control');
+    const speedControl = page.locator('.speedRange');
     await speedControl.fill('1.5');
     await expect(speedControl).toHaveValue('1.5');
     
@@ -180,6 +185,6 @@ test.describe('Video Functionality Tests', () => {
     await waitForVideoLoad(page);
     
     // If we got here without errors, video loading is working
-    await expect(page.getByTestId('video-player-container')).toBeVisible();
+    await expect(page.locator('[data-title="VideoPlayer"]')).toBeVisible();
   });
 });

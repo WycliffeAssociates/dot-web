@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 // Common test constants
 export const TEST_BOOKS = ['MAT', 'MRK', 'LUK', 'JHN'];
@@ -6,11 +6,25 @@ export const TEST_CHAPTERS = ['001', '002', '003'];
 
 // Helper functions
 export async function waitForVideoPlayer(page: Page) {
-  await page.getByTestId('video-player-container').waitFor({ state: 'visible' });
+  await page.locator('[data-title="VideoPlayer"]').waitFor({ state: 'visible' });
 }
 
 export async function navigateToBook(page: Page, book: string) {
-  await page.getByTestId(`book-button-${book.toLowerCase()}`).click();
+  // Book buttons don't have test IDs, so we need to find them by text content
+  // Map book codes to display names
+  const bookNames: Record<string, string> = {
+    'mat': 'Matayo',
+    'mrk': 'Marko', 
+    'luk': 'Luka',
+    'jhn': 'Yoane'
+  };
+  
+  const bookName = bookNames[book.toLowerCase()];
+  if (!bookName) {
+    throw new Error(`Unknown book code: ${book}`);
+  }
+  
+  await page.locator(`button:has-text("${bookName}")`).first().click();
   await waitForVideoPlayer(page);
   // Wait for URL to update
   await page.waitForTimeout(200);

@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { waitForVideoPlayer, navigateToBook } from '../fixtures/test-helpers';
+import { expect, test } from '@playwright/test';
+import { navigateToBook, waitForVideoPlayer } from '../fixtures/test-helpers';
 
 test.describe('Responsive Design Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -17,7 +17,7 @@ test.describe('Responsive Design Tests', () => {
     await expect(page.getByTestId('header-menu-toggle')).toBeVisible();
     
     // Test video player
-    const playerContainer = page.getByTestId('video-player-container');
+    const playerContainer = page.locator('[data-title="VideoPlayer"]');
     await expect(playerContainer).toBeVisible();
     
     // Verify mobile aspect ratio
@@ -26,7 +26,7 @@ test.describe('Responsive Design Tests', () => {
     expect(playerBox?.height).toBeCloseTo(playerBox!.width * 9/16, 0.1);
     
     // Test book navigation on mobile
-    const bookNav = page.getByTestId('book-navigation-container');
+    const bookNav = page.locator('[data-title="BookNav"]');
     await expect(bookNav).toBeVisible();
     
     // Test chapter navigation on mobile - should be scrollable
@@ -50,10 +50,10 @@ test.describe('Responsive Design Tests', () => {
     await expect(page.getByTestId('header-menu-toggle')).toBeVisible();
     
     // Test video player
-    await expect(page.getByTestId('video-player-container')).toBeVisible();
+    await expect(page.locator('[data-title="VideoPlayer"]')).toBeVisible();
     
     // Test book navigation on tablet
-    await expect(page.getByTestId('book-navigation-container')).toBeVisible();
+    await expect(page.locator('[data-title="BookNav"]')).toBeVisible();
     
     // Test chapter navigation on tablet
     await expect(page.getByTestId('chapter-list-container')).toBeVisible();
@@ -74,17 +74,20 @@ test.describe('Responsive Design Tests', () => {
     await expect(page.getByTestId('header-menu-toggle')).toBeVisible();
     
     // Test video player - should be larger on desktop
-    const playerContainer = page.getByTestId('video-player-container');
+    const playerContainer = page.locator('[data-title="VideoPlayer"]');
     await expect(playerContainer).toBeVisible();
     
     const playerBox = await playerContainer.boundingBox();
     expect(playerBox?.width).toBeGreaterThan(600); // Should be wider on desktop
     
     // Test book navigation on desktop
-    await expect(page.getByTestId('book-navigation-container')).toBeVisible();
+    await expect(page.locator('[data-title="BookNav"]')).toBeVisible();
     
     // Test chapter navigation on desktop
     await expect(page.getByTestId('chapter-list-container')).toBeVisible();
+    
+    // If we got here without errors, video loading is working
+    await expect(page.locator('[data-title="VideoPlayer"]')).toBeVisible();
   });
 
   test('navigation drawer works on mobile', async ({ page }) => {
@@ -142,7 +145,7 @@ test.describe('Responsive Design Tests', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await waitForVideoPlayer(page);
     
-    const playerContainer = page.getByTestId('video-player-container');
+    const playerContainer = page.locator('[data-title="VideoPlayer"]');
     const mobileBox = await playerContainer.boundingBox();
     
     // Switch to desktop
@@ -190,7 +193,7 @@ test.describe('Responsive Design Tests', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await waitForVideoPlayer(page);
     
-    const playerContainer = page.getByTestId('video-player-container');
+    const playerContainer = page.locator('[data-title="VideoPlayer"]');
     const portraitBox = await playerContainer.boundingBox();
     
     // Switch to landscape

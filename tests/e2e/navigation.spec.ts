@@ -16,7 +16,7 @@ test.describe("Navigation Tests", () => {
 
   test("navigate between books in the Bible", async ({page}) => {
     // Start with first book (should be default)
-    await expect(page.getByTestId("book-button-mat")).toBeVisible();
+    await expect(page.locator('button:has-text("Matayo")')).toBeVisible();
 
     // Navigate to different books
     for (const book of TEST_BOOKS) {
@@ -26,8 +26,18 @@ test.describe("Navigation Tests", () => {
       await expect(page).toHaveURL(new RegExp(`/${book}\\..+`, "i"));
 
       // Verify book button is highlighted (active state)
+      const bookName =
+        book.toLowerCase() === "mat"
+          ? "Matayo"
+          : book.toLowerCase() === "mrk"
+          ? "Marko"
+          : book.toLowerCase() === "luk"
+          ? "Luka"
+          : "Yoane";
       await expect(
-        page.getByTestId(`book-button-${book.toLowerCase()}`)
+        page
+          .locator(`[data-title="BookNav"] button:has-text("${bookName}")`)
+          .first()
       ).toHaveClass(/underline/);
 
       // Verify chapters load for this book
@@ -61,12 +71,16 @@ test.describe("Navigation Tests", () => {
     await page.goto("/LUK");
     await waitForVideoPlayer(page);
     await expect(page).toHaveURL(/\/LUK\.\d+$/);
-    await expect(page.getByTestId("book-button-luk")).toHaveClass(/underline/);
+    await expect(
+      page.locator('[data-title="BookNav"] button:has-text("Luka")').first()
+    ).toHaveClass(/underline/);
 
     // Direct navigation to book and chapter
     await page.goto("/JHN.3");
     await waitForVideoPlayer(page);
-    await expect(page.getByTestId("book-button-jhn")).toHaveClass(/underline/);
+    await expect(
+      page.locator('[data-title="BookNav"] button:has-text("Yoane")').first()
+    ).toHaveClass(/underline/);
     await expect(page.getByTestId("chapter-button-003")).toHaveClass(
       /scale-120/
     );
@@ -74,7 +88,9 @@ test.describe("Navigation Tests", () => {
     // Direct navigation to book, chapter, and verse
     await page.goto("/ACT.2.15");
     await waitForVideoPlayer(page);
-    await expect(page.getByTestId("book-button-act")).toHaveClass(/underline/);
+    await expect(
+      page.locator('[data-title="BookNav"] button:has-text("Matendo")').first()
+    ).toHaveClass(/underline/);
     await expect(page.getByTestId("chapter-button-002")).toHaveClass(
       /scale-120/
     );
@@ -133,7 +149,9 @@ test.describe("Navigation Tests", () => {
 
     // Switch to John - should reset to first chapter
     await navigateToBook(page, "JHN");
-    await expect(page.getByTestId("book-button-jhn")).toHaveClass(/underline/);
+    await expect(
+      page.locator('[data-title="BookNav"] button:has-text("Yoane")').first()
+    ).toHaveClass(/underline/);
 
     // Should see chapter buttons for John (starting with chapter 1)
     const firstChapterBtn = page.getByTestId("chapter-button-001");

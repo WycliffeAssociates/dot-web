@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { waitForVideoPlayer } from '../fixtures/test-helpers';
+import { expect, test } from '@playwright/test';
+import { navigateToBook, waitForVideoPlayer } from '../fixtures/test-helpers';
 
 test.describe('Simple Download Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -100,7 +100,7 @@ test.describe('Simple Download Tests', () => {
     await expect(swDownloadDeviceInput).toHaveValue('true');
     
     // Navigate to a different video
-    await page.getByTestId('book-button-mrk').click();
+    await navigateToBook(page, 'MRK');
     await page.waitForTimeout(500);
     
     // Verify swDownloadDevice still has value "true" after navigation

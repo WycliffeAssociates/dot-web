@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { waitForVideoPlayer, checkNoConsoleErrors } from '../fixtures/test-helpers';
+import { expect, test } from '@playwright/test';
+import { checkNoConsoleErrors, waitForVideoPlayer } from '../fixtures/test-helpers';
 
 test.describe('Page Load Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -20,8 +20,8 @@ test.describe('Page Load Tests', () => {
     await expect(page.getByTestId('header-logo')).toBeVisible();
     await expect(page.getByTestId('header-theme-toggle')).toBeVisible();
     await expect(page.getByTestId('header-menu-toggle')).toBeVisible();
-    await expect(page.getByTestId('video-player-container')).toBeVisible();
-    await expect(page.getByTestId('book-navigation-container')).toBeVisible();
+    await expect(page.locator('[data-title="VideoPlayer"]')).toBeVisible();
+    await expect(page.locator('[data-title="BookNav"]')).toBeVisible();
     await expect(page.getByTestId('chapter-list-container')).toBeVisible();
   });
 
@@ -30,10 +30,10 @@ test.describe('Page Load Tests', () => {
     
     // Wait for video player and book list to load
     await waitForVideoPlayer(page);
-    await page.getByTestId('book-navigation-container').waitFor({ state: 'visible' });
+    await page.locator('[data-title="BookNav"]').waitFor({ state: 'visible' });
     
     // Check that multiple books are loaded
-    const bookButtons = page.getByTestId(/^book-button-/);
+    const bookButtons = page.locator('[data-title="BookNav"] button');
     await expect(bookButtons).toHaveCount(27); // 27 books in New Testament
     
     // Check that chapters are loaded for the default book
@@ -62,11 +62,11 @@ test.describe('Page Load Tests', () => {
     // Test desktop view
     await page.setViewportSize({ width: 1200, height: 800 });
     await waitForVideoPlayer(page);
-    await expect(page.getByTestId('video-player-container')).toBeVisible();
+    await expect(page.locator('[data-title="VideoPlayer"]')).toBeVisible();
     
     // Test mobile view  
     await page.setViewportSize({ width: 375, height: 667 }); // iPhone size
-    await expect(page.getByTestId('video-player-container')).toBeVisible();
+    await expect(page.locator('[data-title="VideoPlayer"]')).toBeVisible();
     await expect(page.getByTestId('header-menu-toggle')).toBeVisible();
   });
 });
