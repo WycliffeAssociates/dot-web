@@ -1,21 +1,34 @@
 import type {PlaylistResponse} from "@customTypes/Api";
-import type {IVidWithCustom, envPropsForPlayer} from "@customTypes/types";
+import type {envPropsForPlayer, IVidWithCustom} from "@customTypes/types";
+import config from "@src/domainConfig.ts";
 import {
-  groupObjectsByKey,
-  getUserPreferences,
   getPreferredLangFromHeader,
+  getUserPreferences,
+  groupObjectsByKey,
   mutateSortVidsArray,
 } from "@utils";
-import config from "@src/domainConfig.ts";
 
 export const DOWNLOAD_SERVICE_WORK_URL = "download-video";
+// This is for testings, since can't mock a ssr call in playwright browser
+const globalPlaylistCache = new Map();
 
 export async function getPlaylistData(origin: string, playlist: string) {
+  // 2. Create a unique key for this request
+  const cacheKey = `${origin}-${playlist}`;
+
+  // 3. Return cached data immediately if it exists
+  if (globalPlaylistCache.has(cacheKey)) {
+    // Optional: Log to confirm it's working during tests
+    if (import.meta.env.DEV)
+      console.log(`⚡ Using in-memory cache for ${playlist}`);
+    return globalPlaylistCache.get(cacheKey);
+  }
   try {
     const urlToFetch = `${origin}/api/getPlaylist?playlist=${playlist}`;
     const response = await fetch(urlToFetch);
     if (response.ok) {
       const data = response.json() as PlaylistResponse;
+      globalPlaylistCache.set(cacheKey, data);
       return data;
     }
   } catch (error) {
@@ -26,7 +39,9 @@ export async function getPlaylistData(origin: string, playlist: string) {
 
 export async function getPageData(Astro: any, origin?: string) {
   // FIGURE OUT WHICH PLAYLIST TO LOAD BASED ON DOMAIN
-  let originToMatch = import.meta.env.PROD ? Astro.url.origin : (origin || "drcswahili");
+  let originToMatch = import.meta.env.PROD
+    ? Astro.url.origin
+    : origin || "drcswahili";
   if (
     originToMatch.includes(".pages.dev") ||
     originToMatch.includes("127.0.0.1") ||
@@ -103,6 +118,6 @@ export async function getPageData(Astro: any, origin?: string) {
     videojsInitalDict,
     userPreferences,
     bucketized,
-    cfEnv
+    cfEnv,
   };
 }
