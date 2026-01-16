@@ -11,6 +11,7 @@ import {defineConfig, devices} from "@playwright/test";
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+// todo, error in CI on policy keyl. Let's just add as secret in github
 export default defineConfig({
   testDir: "./tests",
   /* Run tests in files in parallel */
@@ -22,9 +23,9 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: "html",
+  reporter: "list",
   /* Global setup file for API mocking */
-  globalSetup: './tests/setup.ts',
+  globalSetup: "./tests/setup.ts",
   /* Shared settings for all projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
