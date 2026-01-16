@@ -1,6 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
   "exclude": ["dist", "public", "./functions"],
+  "include": ["src", "tests", "worker-configuration.d.ts"],
   "compilerOptions": {
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
@@ -9,9 +10,6 @@
     "lib": ["ESNext", "DOM", "WebWorker"],
     "types": [
       "astro/client",
-      "@cloudflare/workers-types",
-      "vite-plugin-pwa/client",
-      "vite-plugin-pwa/info",
       "@types/video.js"
     ],
 

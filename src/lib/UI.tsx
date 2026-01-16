@@ -23,8 +23,6 @@ import {
 } from "@lib/store";
 import {cleanUpOldChapters} from "@components/Player/ChapterMarker";
 import {convertTimeToSeconds, formatDuration} from "./utils";
-import {ChapterMarker} from "@components/Player/ChapterMarker";
-import {SW_CACHE_NAME} from "src/constants";
 
 export const CONTAINER = "max-w-[1000px] mx-auto";
 // @unocss-include
@@ -594,25 +592,6 @@ export function handlePlayRateChange(event: Event) {
   const currCookie = getJsonFromDocCookie() || {};
   (currCookie.playbackSpeed = String(target.value)),
     setCookie(JSON.stringify(currCookie));
-}
-export async function getSavedResponseFromCache(
-  vid: IVidWithCustom | undefined
-) {
-  const falsy = {
-    response: null,
-    isSaved: false,
-  };
-  if (import.meta.env.SSR) return falsy;
-  if (!vid || !vid.reference_id) return falsy;
-  const cache = await caches.open(SW_CACHE_NAME);
-  const match = await cache.match(`/${vid.reference_id}`);
-  if (!match || (match && match.status != 200)) {
-    return falsy;
-  } else
-    return {
-      response: match,
-      isSaved: true,
-    };
 }
 
 export function manageShowingChapterArrows(

@@ -5,7 +5,6 @@ import type Player from "video.js/dist/types/player";
 
 const [downloadPreference, setDownloadPreference] =
   createSignal<IDownloadPreferences>({
-    saveToServiceWorker: false,
     downloadOffline: true,
     justThisVideo: true,
     swPayload:

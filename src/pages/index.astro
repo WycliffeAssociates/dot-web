@@ -5,6 +5,7 @@ import Layout from "@layouts/Layout.astro";
 import {getPageData} from "@lib/routes";
 
 // Get all shared page data
+
 const pageData = await getPageData(Astro);
 if (!pageData) return Astro.redirect("404");
 
@@ -37,7 +38,7 @@ const initialData = {
 >
   <div class="grid grid-rows-[auto_auto_1fr] overflow-y-auto">
     <AppWrapper
-      client:load
+      client:only="solid-js"
       userPreferences={userPreferences}
       initialData={initialData}
       playlist={playlist}

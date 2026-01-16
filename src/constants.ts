@@ -1,3 +1,4 @@
+export const DOWNLOAD_SERVICE_WORK_URL = "/api/download";
 export const BibleBookCategories = {
   OT: [
     "GEN",
@@ -106,4 +107,3 @@ export const PLAYER_LOADER_OPTIONS = {
   // id: 6312743832112,
   // videoId: currentVid().id,
 };
-export const SW_CACHE_NAME = "dot-downloads";

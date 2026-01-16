@@ -1,4 +1,5 @@
-import type {PlaylistResponse} from "@customTypes/Api";
+import {actions} from "astro:actions";
+import {env} from "cloudflare:workers";
 import type {envPropsForPlayer, IVidWithCustom} from "@customTypes/types";
 import config from "@src/domainConfig.ts";
 import {
@@ -7,37 +8,11 @@ import {
   groupObjectsByKey,
   mutateSortVidsArray,
 } from "@utils";
+import type {AstroGlobal} from "astro";
 
-export const DOWNLOAD_SERVICE_WORK_URL = "download-video";
-// This is for testings, since can't mock a ssr call in playwright browser
-const globalPlaylistCache = new Map();
+export const DOWNLOAD_SERVICE_WORK_URL = "/api/download";
 
-export async function getPlaylistData(origin: string, playlist: string) {
-  // 2. Create a unique key for this request
-  const cacheKey = `${origin}-${playlist}`;
-
-  // 3. Return cached data immediately if it exists
-  if (globalPlaylistCache.has(cacheKey)) {
-    // Optional: Log to confirm it's working during tests
-    if (import.meta.env.DEV)
-      console.log(`⚡ Using in-memory cache for ${playlist}`);
-    return globalPlaylistCache.get(cacheKey);
-  }
-  try {
-    const urlToFetch = `${origin}/api/getPlaylist?playlist=${playlist}`;
-    const response = await fetch(urlToFetch);
-    if (response.ok) {
-      const data = response.json() as PlaylistResponse;
-      globalPlaylistCache.set(cacheKey, data);
-      return data;
-    }
-  } catch (error) {
-    console.error(error);
-    return;
-  }
-}
-
-export async function getPageData(Astro: any, origin?: string) {
+export async function getPageData(Astro: AstroGlobal, origin?: string) {
   // FIGURE OUT WHICH PLAYLIST TO LOAD BASED ON DOMAIN
   let originToMatch = import.meta.env.PROD
     ? Astro.url.origin
@@ -50,7 +25,7 @@ export async function getPageData(Astro: any, origin?: string) {
     originToMatch = "drcswahili";
   }
 
-  let matchingKey = Object.keys(config).find((key) =>
+  const matchingKey = Object.keys(config).find((key) =>
     originToMatch.toLowerCase().includes(key.toLowerCase())
   );
   if (!matchingKey || !config[matchingKey]) return null;
@@ -65,7 +40,7 @@ export async function getPageData(Astro: any, origin?: string) {
   const initialDict = initialDictModule.default;
   let videojsInitalDict;
   try {
-    let module = await import(
+    const module = await import(
       `../../node_modules/video.js/dist/lang/${preferredLocale}.json`
     );
     videojsInitalDict = module.default as Record<string, string>;
@@ -73,13 +48,16 @@ export async function getPageData(Astro: any, origin?: string) {
     console.error({error});
   }
 
-  // DATA FETCHING
-  let userPreferences = getUserPreferences(Astro);
-  let data = await getPlaylistData(Astro.url.origin, playlist);
-  if (!data) return null;
+  // DATA FETCHING via Astro Action
+  const userPreferences = getUserPreferences(Astro);
+  const {data, error} = await Astro.callAction(actions.getPlaylist, {playlist});
+
+  if (error || !data) {
+    console.error("Failed to fetch playlist:", error);
+    return null;
+  }
 
   // DATA SHAPING
-  // type coercion here to add a few extra types below on this vids array.
   const vids = data.videos as IVidWithCustom[];
   if (!vids || !vids.length) {
     return null;
@@ -94,18 +72,10 @@ export async function getPageData(Astro: any, origin?: string) {
   }
 
   // CLOUDFLARE ENV SETUP
-  let cfEnv: envPropsForPlayer = {
-    accountId: "",
-    playerId: "",
+  const cfEnv: envPropsForPlayer = {
+    accountId: env.ACCOUNT_ID,
+    playerId: env.PLAYER_ID,
   };
-  if (import.meta.env.DEV) {
-    (cfEnv.accountId = import.meta.env.ACCOUNT_ID),
-      (cfEnv.playerId = import.meta.env.PLAYER_ID);
-  } else {
-    const runtime = Astro.locals.runtime;
-    cfEnv.accountId = runtime.env.ACCOUNT_ID;
-    cfEnv.playerId = runtime.env.PLAYER_ID;
-  }
   if (!cfEnv.accountId || !cfEnv.playerId) {
     return null;
   }

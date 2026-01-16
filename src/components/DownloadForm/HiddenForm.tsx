@@ -1,5 +1,5 @@
-import { DOWNLOAD_SERVICE_WORK_URL } from "@lib/routes";
 import { downloadPreference } from "@lib/store";
+import { DOWNLOAD_SERVICE_WORK_URL } from "@src/constants";
 import { Show } from "solid-js";
 
 interface IHiddenForm {
@@ -13,23 +13,7 @@ export function HiddenForm(props: IHiddenForm) {
 				name="swPayload"
 				value={JSON.stringify(downloadPreference().swPayload)}
 			/>
-			<input
-				type="hidden"
-				name="swDownloadDevice"
-				value={String(downloadPreference().downloadOffline)}
-			/>
-			<input
-				type="hidden"
-				name="swSaveSw"
-				value={String(downloadPreference().saveToServiceWorker)}
-			/>
-			<Show
-				when={
-					(downloadPreference().saveToServiceWorker ||
-						downloadPreference().downloadOffline) &&
-					downloadPreference().swPayload
-				}
-			>
+			<Show when={downloadPreference().swPayload}>
 				<button
 					type="submit"
 					class="dark:(bg-surface/10 border border-primary/60 hover:(border-primary/90 bg-surface/20)) hover:(bg-neutral-300) active:(scale-98) px-4 py-2 rounded mt-2 bg-neutral-200 border border-primary"

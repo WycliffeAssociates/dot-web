@@ -84,20 +84,6 @@ export function DownloadMenu(props: IDownloadMenu) {
           }
           switchLabel=" Download To Device"
         />
-
-        <DownloadSwitch
-          formName={props.formName}
-          defaultIsChecked={downloadPreference().saveToServiceWorker}
-          onCheckedChange={(isChecked) =>
-            setDownloadPreference((prev) => {
-              return {
-                ...prev,
-                saveToServiceWorker: isChecked,
-              };
-            })
-          }
-          switchLabel="Save offline"
-        />
       </form>
       <HiddenForm name={props.formName} />
     </>

@@ -58,7 +58,6 @@ export interface userPreferencesI {
   playbackSpeed?: string;
 }
 export interface IDownloadPreferences {
-  saveToServiceWorker: boolean;
   downloadOffline: boolean;
   justThisVideo: boolean;
   swPayload: object | null | undefined;

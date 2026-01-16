@@ -15,7 +15,7 @@ import type {
 	i18nDict,
 	userPreferencesI,
 } from "@customTypes/types";
-import { DOWNLOAD_SERVICE_WORK_URL } from "@lib/routes";
+
 import {
 	currentChapLabel,
 	currentVid,
@@ -53,7 +53,10 @@ import { createResizeObserver } from "@solid-primitives/resize-observer";
 import { throttle } from "@solid-primitives/scheduled";
 import { normalizeBookName } from "@utils";
 import { createSignal, For, onMount, Show } from "solid-js";
-import { PLAYER_LOADER_OPTIONS } from "src/constants";
+import {
+	DOWNLOAD_SERVICE_WORK_URL,
+	PLAYER_LOADER_OPTIONS,
+} from "src/constants";
 
 interface IVidPlayerProps {
 	vids: Record<string | number | symbol, IVidWithCustom[]>;
@@ -265,13 +268,11 @@ export function VidPlayer(props: IVidPlayerProps) {
 		<div class={`overflow-x-hidden ${CONTAINER} w-full sm:(rounded-lg)`}>
 			<div
 				ref={playerRefContainer}
-				data-testid="video-player-container"
 				data-title="VideoPlayer"
 				class="w-full mx-auto aspect-video  relative  sm:(rounded-lg overflow-hidden)"
 			>
 				{/* Chapter Back */}
 				<button
-					data-testid="video-player-chapter-back"
 					type="button"
 					data-title="chapBack"
 					class={`text-surface w-12 h-12 md:w-20 md:h-20 bg-gray-200/40 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute left-4 top-1/2 -translate-y-1/2 z-30 ${
@@ -310,7 +311,6 @@ export function VidPlayer(props: IVidPlayerProps) {
 				</Show>
 
 				<button
-					data-testid="video-player-chapter-next"
 					type="button"
 					data-title="chapNext"
 					class={`text-surface w-12 h-12 md:w-20 md:h-20 bg-gray-200/40 grid place-content-center rounded-full hover:( text-primary bg-primary/10) absolute right-4 top-1/2 -translate-y-1/2 z-30 ${
@@ -331,7 +331,6 @@ export function VidPlayer(props: IVidPlayerProps) {
 					{/* Chapter Forward */}
 					<span class="inline-flex gap-1 items-center">
 						<input
-							data-testid="video-player-speed-control"
 							type="range"
 							class="speedRange appearance-none bg-transparent cursor-pointer w-60 "
 							min=".25"
@@ -434,7 +433,6 @@ export function VidPlayer(props: IVidPlayerProps) {
 				</div>
 			</div>
 			<div
-				data-testid="book-navigation-container"
 				data-title="BookNav"
 				class={`${mobileHorizontalPadding} py-2 bg-primary dark:bg-surface/05 text-base rounded-tr-xl rounded-tl-xl  scrollbar-hide min-h-200px`}
 			>
@@ -458,7 +456,6 @@ export function VidPlayer(props: IVidPlayerProps) {
 								return (
 									<li class="text-neutral-100 dark:text-neutral-200 py-1 w-full border-y border-base md:text-lg md:py-2">
 										<button
-											data-testid={`book-button-${key.toLowerCase()}`}
 											type="button"
 											onClick={() => {
 												setNewBook(book);
