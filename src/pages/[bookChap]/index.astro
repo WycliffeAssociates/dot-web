@@ -1,11 +1,11 @@
 ---
 import Layout from "@layouts/Layout.astro";
 import {AppWrapper} from "@components/AppWrapper";
-import {getPageData} from "@lib/routes";
+import { actions } from 'astro:actions';
 
 // Get all shared page data
-const pageData = await getPageData(Astro);
-if (!pageData) return Astro.redirect("404");
+const { data: pageData, error } = await Astro.callAction(actions.getPageData, {});
+if (error || !pageData) return Astro.redirect("/404");
 
 const {
   playlist,

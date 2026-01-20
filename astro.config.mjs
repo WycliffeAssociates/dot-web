@@ -1,35 +1,12 @@
 import cloudflare from "@astrojs/cloudflare";
 import solidJs from "@astrojs/solid-js";
-import AstroPWA from "@vite-pwa/astro";
 import {defineConfig} from "astro/config";
 import {visualizer} from "rollup-plugin-visualizer";
 import UnoCSS from "unocss/astro";
 
-const isDev = import.meta.env.DEV;
 // https://astro.build/config
 export default defineConfig({
-  integrations: [
-    UnoCSS(),
-    solidJs(),
-    AstroPWA({
-      workbox: {
-        disableDevLogs: false,
-      },
-      srcDir: "src",
-      filename: "sw.ts",
-      strategies: "injectManifest",
-      registerType: "autoUpdate",
-      // manifest: {},
-      devOptions: {
-        enabled: true,
-        type: "module",
-        /* other options */
-      },
-      injectManifest: {
-        globIgnores: ["**/_worker.js/**"],
-      },
-    }),
-  ],
+  integrations: [UnoCSS(), solidJs()],
   output: "server",
   adapter: cloudflare({
     platformProxy: {

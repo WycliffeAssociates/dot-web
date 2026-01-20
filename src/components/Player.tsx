@@ -15,8 +15,7 @@ import type {
 	i18nDict,
 	userPreferencesI,
 } from "@customTypes/types";
-import { DOWNLOAD_SERVICE_WORK_URL } from "@lib/routes";
-import {
+	import {
 	currentChapLabel,
 	currentVid,
 	playerSpeed,
@@ -88,7 +87,6 @@ export function VidPlayer(props: IVidPlayerProps) {
 	let playerRef: HTMLDivElement | undefined;
 	let playerRefContainer: HTMLDivElement | undefined;
 	let chaptersContainerRef: HTMLDivElement | undefined;
-	const formName = "downloadData";
 
 	//=============== OnMount augments video player  =============
 	// This uses the https://github.com/brightcove/player-loader package instead of bare video js for two reasons; One is convenience, but the other is that the analytics for the playlists and player is already set versus having to wire up all the analytics.  It also leaves some of the control that is exposed in the BC Player UI since it's basically configuring the script in BC.  This must be run on mount with a dynamic import since the brightcove player loader uses the window global, which of course, doesn't run in SSR.  Since most of the functionality on the page is related to the player, there is pretty much 0 interactivity until the player loads.
@@ -352,25 +350,30 @@ export function VidPlayer(props: IVidPlayerProps) {
 					</span>
 					{/* Speed Preference */}
 					<div data-title="downloadCurrentVid" class="relative ml-auto">
-						<form
-							action={DOWNLOAD_SERVICE_WORK_URL}
-							method="post"
-							name={formName}
-						>
-							<input
-								type="hidden"
-								name="swPayload"
-								value={JSON.stringify([currentMp4Sources()?.[0]])}
-							/>
-							<input
-								type="hidden"
-								name="swDownloadDevice"
-								value={String("true")}
-							/>
-							<button type="submit" class="">
-								<IconDownload classNames="hover:text-primary" />
-							</button>
-						</form>
+						<Show when={currentMp4Sources()?.[0]?.name}>
+							<form
+								action="/api/download"
+								method="post"
+								class="inline-block"
+							>
+								<input
+									type="hidden"
+									name="payload"
+									value={JSON.stringify([currentMp4Sources()?.[0]])}
+								/>
+								<input
+									type="hidden"
+									name="downloadToDevice"
+									value="true"
+								/>
+								<button
+									type="submit"
+									class=""
+								>
+									<IconDownload classNames="hover:text-primary" />
+								</button>
+							</form>
+						</Show>
 					</div>
 				</div>
 				<div class="flex">

@@ -61,7 +61,7 @@ export interface IDownloadPreferences {
   saveToServiceWorker: boolean;
   downloadOffline: boolean;
   justThisVideo: boolean;
-  swPayload: object | null | undefined;
+  apiPayload: object | null | undefined;
 }
 export type wholeBookPresets = "BIG" | "SMALL";
 export type IpopulateSwPayload =

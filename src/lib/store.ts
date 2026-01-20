@@ -1,6 +1,6 @@
+import type {IDownloadPreferences, IVidWithCustom} from "@customTypes/types";
 import {createSignal} from "solid-js";
 import {createStore} from "solid-js/store";
-import type {IDownloadPreferences, IVidWithCustom} from "@customTypes/types";
 import type Player from "video.js/dist/types/player";
 
 const [downloadPreference, setDownloadPreference] =
@@ -8,8 +8,8 @@ const [downloadPreference, setDownloadPreference] =
     saveToServiceWorker: false,
     downloadOffline: true,
     justThisVideo: true,
-    swPayload:
-      null /* arr of vid {name, refid, src, size} objects that sw can digest */,
+    apiPayload:
+      null /* arr of vid {name, refid, src, size} objects that API can digest */,
   });
 // SSR will populate this when it renders.
 const [currentVid, setCurrentVid] = createStore<IVidWithCustom>(

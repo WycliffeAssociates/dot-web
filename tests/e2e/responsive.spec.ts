@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { waitForVideoPlayer, navigateToBook } from '../fixtures/test-helpers';
+import { expect, test } from '@playwright/test';
+import { navigateToBook, waitForVideoPlayer } from '../fixtures/test-helpers';
 
 test.describe('Responsive Design Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -163,27 +163,6 @@ test.describe('Responsive Design Tests', () => {
     expect(mobileBox2!.width).toBeLessThanOrEqual(375);
   });
 
-  test.skip('touch interactions work on mobile', async ({ page }) => {
-    // Set mobile viewport and enable touch
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.addInitScript(() => {
-      // Simulate touch device
-      Object.defineProperty(navigator, 'maxTouchPoints', {
-        get: () => 1,
-      });
-    });
-    
-    await waitForVideoPlayer(page);
-    
-    // Test touch interaction with chapter buttons
-    const chapterButton = page.getByTestId('chapter-button-002');
-    await chapterButton.tap();
-    await page.waitForTimeout(1000);
-    
-    // Should navigate to chapter 2
-    // Note: Component doesn't use scale-120 class, checking for successful navigation instead
-    await expect(page).toHaveURL(/\/MRK\.002$/);
-  });
 
   test('orientation changes work correctly', async ({ page }) => {
     // Set mobile portrait
