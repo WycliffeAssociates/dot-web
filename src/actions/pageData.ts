@@ -1,5 +1,5 @@
 import {defineAction} from "astro:actions";
-import {playbackApi} from "@customTypes/Api";
+import {fetchPlaylist} from "@lib/playlistCache";
 import type {envPropsForPlayer, IVidWithCustom} from "@customTypes/types";
 import config from "@src/domainConfig";
 import {
@@ -50,29 +50,12 @@ export const getPageData = defineAction({
     } else {
       const runtime = context.locals.runtime;
       const env = runtime.env;
-      const policyKey = env.POLICY_KEY;
-      const accountId = env.ACCOUNT_ID;
 
       try {
-        const pbApi = new playbackApi({
-          baseUrl: "https://edge.api.brightcove.com/playback/v1",
-          baseApiParams: {
-            headers: {
-              Accept: `application/json;pk=${policyKey}`,
-            },
-          },
-        });
+        const fetched = await fetchPlaylist(env, playlist);
 
-        const res = await pbApi.accounts.getPlaylistsByIdOrReferenceId(
-          accountId,
-          `ref:${playlist}`,
-          {
-            limit: 2000,
-          }
-        );
-
-        if (res.ok) {
-          data = res.data;
+        if (fetched) {
+          data = fetched;
           if (import.meta.env.CI) {
             globalPlaylistCache.set(cacheKey, data);
           }

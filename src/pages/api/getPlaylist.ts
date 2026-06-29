@@ -1,4 +1,4 @@
-import {playbackApi} from "@customTypes/Api";
+import {fetchPlaylist} from "@lib/playlistCache";
 import type {APIRoute} from "astro";
 
 export const GET: APIRoute = async (context) => {
@@ -6,8 +6,6 @@ export const GET: APIRoute = async (context) => {
   const env = runtime.env;
   const url = context.url;
   const playlist = url.searchParams?.get("playlist") as string;
-  const policyKey = env.POLICY_KEY;
-  const accountId = env.ACCOUNT_ID;
 
   if (!playlist) {
     return new Response(null, {
@@ -20,24 +18,9 @@ export const GET: APIRoute = async (context) => {
   }
 
   try {
-    const pbApi = new playbackApi({
-      baseUrl: "https://edge.api.brightcove.com/playback/v1",
-      baseApiParams: {
-        headers: {
-          Accept: `application/json;pk=${policyKey}`,
-        },
-      },
-    });
-
-    const res = await pbApi.accounts.getPlaylistsByIdOrReferenceId(
-      accountId,
-      `ref:${playlist}`,
-      {
-        limit: 2000,
-      }
-    );
-    if (res.ok) {
-      return new Response(JSON.stringify(res.data), {
+    const data = await fetchPlaylist(env, playlist);
+    if (data) {
+      return new Response(JSON.stringify(data), {
         headers: {
           "Access-Control-Allow-Origin": "*",
         },
